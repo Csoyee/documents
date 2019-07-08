@@ -1,7 +1,7 @@
 # KVStore documents
 
 #### RocksDB
-- [running RocksDB](https://github.com/Csoyee/documents/blob/master/KVStore/Run_RocksDB_YCSB.md)
+- [running RocksDB](https://github.com/Csoyee/documents/blob/master/KVStore/RocksDB_YCSB.md)
 
 
 ### PPT style documents 
