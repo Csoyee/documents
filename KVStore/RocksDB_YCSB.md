@@ -3,7 +3,7 @@
 
 
 ## YCSB 다운로드 및 compile
-[참고](https://github.com/Csoyee/vldb/blob/master/YCSB/How_To_Start.md)
+[참고](https://github.com/Csoyee/documents/blob/master/Workload/YCSB_How_To_Start.md)
 
 ```bash
 $ git clone https://github.com/brianfrankcooper/YCSB
@@ -26,8 +26,6 @@ $ ./bin/ycsb run rocksdb -s -P workloads/workloada -p rocksdb.dir=/tmp/ycsb-rock
 
 ## Option 조정하기
 - rocksdb 의 경우 configuration을 parameter로 조정하도록 되어있지 않기 때문에 Client에서 option을 조정하거나 parameter을 지정해주는 인터페이스는를 추가해주어야 한다. 
-- client option 지정하는 방법 [Reference](https://github.com/Csoyee/YCSB/commit/db3508ce2a9a725bca9a57b42937f2886d7eddcb)
-
 
 ## Rocksdb Version 조정하기
 - YCSB root 디렉토리에서 pom.xml 에 지정된 rocksdb.version 변수 수정
