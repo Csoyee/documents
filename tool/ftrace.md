@@ -38,9 +38,9 @@ $ cat trace | head -10
 ```
  - header: 결과값 포멧을 결정
    - timestamp: boot 시점으로부터의 시간.  
-	 - function : "<-" symbol을 통해서 parent 로 부터 tracing 됨.
-   - 예시 
-   <img width="484" alt="Screen Shot 2019-07-10 at 12 28 29 AM" src="https://user-images.githubusercontent.com/18457707/60901925-bc124f00-a2a9-11e9-8e37-4809601b18eb.png">
+   - function : "<-" symbol을 통해서 parent 로 부터 tracing 됨.
+   	- 예시 
+   	<img width="484" alt="Screen Shot 2019-07-10 at 12 28 29 AM" src="https://user-images.githubusercontent.com/18457707/60901925-bc124f00-a2a9-11e9-8e37-4809601b18eb.png">
 
    
 
