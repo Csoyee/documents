@@ -19,7 +19,7 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 # eps file
 > set terminal post
 ```  
-이 때 이미지 사이즈 및 전체 그래프의 폰트도 같이 지정할 수 있다.
+- 이 때 이미지 사이즈 및 전체 그래프의 폰트도 같이 지정할 수 있다.
 ```bash
 # png file
 > set terminal png size 1000, 570 enhanced font "Helvetical, 13"
@@ -34,7 +34,7 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 ```
 
 3. 범례
-기본적으로 set key 명령을 통해서 수행된다.
+- 기본적으로 set key 명령을 통해서 수행된다.
 ```bash
 #### position 정하기
 # 그래프 내 왼쪽 아래
@@ -86,8 +86,22 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
   plot "input2.txt" using 1:2 title "data2" with lines
 ```
 
-6. ADVANCED (to be added...)
-6-1. 라인 스타일 설정하기
-6-2. 추세선 그리기
-6-3. 2개의 축을 갖는 그래프 그리기
-6-4. frequency graph 그리기
+6. ADVANCED (to be added...)  
+6-1. 라인 스타일 설정하기  
+- set linestyle
+
+6-2. 추세선 그리기  
+- smooth bezier 
+
+6-3. 2개의 y축을 갖는 그래프 그리기  
+- y2tics를 설정한 다음 기존에 y축 관련하여 사용했던 명령과 같이 사용하되 y 대신 y2 라고 명명한다.
+```bash
+> set y2tics
+> set y2label "y축2"
+```
+- plotting 을 할 때는 comma (,) 를 기준으로 두 개의 데이터를 같이 넣어준 뒤 axes 를 통해 어떤 y축을 의미하는지 명명한다.
+```bash
+> plot "input1.txt" using 1:2 title "data1" with lines axes x1y1, "input2.txt" using 1:2 title "data2" with lines axes x1y2
+```
+6-4. frequency graph 그리기  
+- smooth frequency
