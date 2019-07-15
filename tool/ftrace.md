@@ -8,9 +8,9 @@
  - `/sys/kernel/debug` 에 마운트 되어있음.
 
  - 디버깅 목적에 따라서 아래 설정 파라미터를 enable 시켜야 함
-    > CONFIG_FUNCTION_TRACER
-    > CONFIG_FUNCTION_GRAPH_TRACER
-    > CONFIG_STACK_TRACER
+    > CONFIG_FUNCTION_TRACER  
+    > CONFIG_FUNCTION_GRAPH_TRACER  
+    > CONFIG_STACK_TRACER  
     > CONFIG_DYNAMIC_FTRACE
 
 
