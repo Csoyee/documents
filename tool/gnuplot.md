@@ -11,7 +11,7 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 - gnuplot 의 해석기로는 gnuplot 이 설치된 위치를 명시한다. `#!/usr/bin/gnuplot`
 
 ## 주요 Command 정리 
-1. 포맷 정하기 (png / eps)
+### 1. 포맷 정하기 (png / eps)
 ```bash
 # png file
 > set terminal png 
@@ -28,12 +28,12 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 > set terminal post size 1000, 570 enhanced font "Helvetical, 13"
 ```
 
-2. 결과 파일 이름 정하기
+### 2. 결과 파일 이름 정하기
 ```bash
 > set output 'Output.eps'
 ```
 
-3. 범례
+### 3. 범례
 - 기본적으로 set key 명령을 통해서 수행된다.
 ```bash
 #### position 정하기
@@ -55,7 +55,7 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 > set key horiz right top
 ```
 
-4. 축 이름 정하기
+### 4. 축 이름 정하기
 ```bash
 # x 축
 > set xlabel "x축"
@@ -63,7 +63,7 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 > set ylabel "y축"
 ```
 
-5. 인풋 파일에 따라서 plotting 하기
+### 5. 인풋 파일에 따라서 plotting 하기
 - 인풋 파일 포멧은 아래와 같다.
 ```bash
 # input file name "input.txt"
@@ -86,14 +86,14 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
   plot "input2.txt" using 1:2 title "data2" with lines
 ```
 
-6. ADVANCED (to be added...)  
-6-1. 라인 스타일 설정하기  
+### 6. 기타 등_등 (to be added...)  
+#### 6-1. 라인 스타일 설정하기  
 - set linestyle
 
-6-2. 추세선 그리기  
+#### 6-2. 추세선 그리기  
 - smooth bezier 
 
-6-3. 2개의 y축을 갖는 그래프 그리기  
+#### 6-3. 2개의 y축을 갖는 그래프 그리기  
 - y2tics를 설정한 다음 기존에 y축 관련하여 사용했던 명령과 같이 사용하되 y 대신 y2 라고 명명한다.
 ```bash
 > set y2tics
@@ -103,5 +103,13 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 ```bash
 > plot "input1.txt" using 1:2 title "data1" with lines axes x1y1, "input2.txt" using 1:2 title "data2" with lines axes x1y2
 ```
-6-4. frequency graph 그리기  
+#### 6-4. frequency graph 그리기  
 - smooth frequency
+
+#### 6-5. x축 시간 데이터 넣기
+```bash
+# xdata 로 시간 데이터를 쓸 것 임을 명시
+> set xdata time
+# 사용할 시간 포맷을 명시 -- [Y:년/m:월/d:일/H:시/M:분/S:초]
+> set timefmt '%Y/%m/%d-%H:%M:%S'
+```
