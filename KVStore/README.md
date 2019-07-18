@@ -1,8 +1,10 @@
 # KVStore documents
 
 #### RocksDB
-- [running RocksDB](https://github.com/Csoyee/documents/blob/master/KVStore/RocksDB_YCSB.md)
+- [running YCSB on RocksDB](https://github.com/Csoyee/documents/blob/master/KVStore/RocksDB_YCSB.md)
 
+#### Redis
+- [running YCSB on Redis](https://github.com/Csoyee/documents/blob/master/KVStore/Redis_YCSB.md)
 
 ### PPT style documents 
 #### LSM 
