@@ -48,7 +48,7 @@ select.append(groupByStr + ";");
 
 
 #### INSERT
-- insert 의 경우 따로 특별하게 사용되는 인자는 없으며 field 개수에 따라서 데이터를 여러 개 insert 한다.
+- insert 의 경우 따로 특별하게 사용되는 인자는 없으며 field 개수만큼 데이터를 생성해서 insert 쿼리를 만든다.
 ```bash
 StringBuilder insert = new StringBuilder("INSERT INTO ");
 insert.append(insertType.tableName);
