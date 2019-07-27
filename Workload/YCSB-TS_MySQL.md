@@ -29,12 +29,13 @@ read.append("?);");
 - 따라서 이 결과 만들어지는 쿼리는 아래와 같다.    
     ```bash
     # (특정 Timestamp key 를 갖는 테이블의 값을 select하는 쿼리)
-    $> SELECT * FROM [tableName] WHERE (YCSB_KEY=?);  `
+    $> SELECT * FROM [tableName] WHERE (YCSB_KEY=?);  
     ```
     
 #### SCAN
 - aggregation 함수를 활용해서 select 한 결과를 가공한다. 
 - 크게 3가지로 aggregation operation을 수행한다. (avg/count/sum) 따라서 인자로 넘어온 값에 따라 select string 을 결정한다.
+- workload file 을 통해 비율을 조정할 수 있음 (scanproportion - range select / avgproportion / countproportion / sumproportion)
 ```bash
 StringBuilder select = new StringBuilder("SELECT " + selectStr + " FROM ");
 select.append(scanType.tableName);
@@ -44,7 +45,7 @@ select.append(TIMESTAMP_KEY);
 select.append(" BETWEEN ? AND ? ");
 select.append(groupByStr + ";");
 ```
-- 위에서 selectStr 은 avg/count/sum 여부에 따라서 예를 들어 avg 인 경우 `AVG(VALUE) AS VALUE` 로 결정되어 있으며, groupByStr 도 필요한 경우 `GROUP BY TEIMSTAM_KEY` 로 설정되어있다. 
+- 위에서 selectStr 은 scan/avg/count/sum 여부에 따라서 예를 들어 scan 인 경우 `*` avg 인 경우 `AVG(VALUE) AS VALUE` 로 결정되어 있으며, groupByStr 도 필요한 경우 `GROUP BY TEIMSTAM_KEY` 로 설정되어있다. 
 
 
 #### INSERT
