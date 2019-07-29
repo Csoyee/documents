@@ -32,14 +32,14 @@
 
 ---
 ## 2. How we keep track of live SST files 
-
+[참조](https://github.com/facebook/rocksdb/wiki/How-we-keep-track-of-live-SST-files)
 - 락스디비의 LSM tree 는 SST 파일 리스트로 구성되어 있다. 각각의 컴팩션 과정 이후에 컴팩션 아웃풋 파일이 리스트에 추가되고 컴팩션 인풋 파일들은 해당 리스트에서 삭제된다. 하지만 리스트에서 제거된 인풋파일들이 리스트에서 제거되자마자 삭제되는 것은 아니다. 그 이유는 `get` 이나 `iterators` 작업이 끝날 때까지 혹은 iterator이 free 될 때까지 해당 파일을 필요로할 수 있기 때문이다. 그렇다면 이러한 정보는 어떻게 유지할까?
 
 - LSM tree 에서 파일 리스트는 `version` 이라는 자료구조로 관리한다. Compaction 이나 memtable flush가 끝나면 갱신된 LSM tree에 대해서 새로운 `version` 이 생성된다. 물론 한 시점에 up-to-date LSM tree를 의미하는 "current" `version`은 오직 하나이다. 새로운 `get` 작업이나 `iterator`은 current version을 사용할 것이다. 
 
 - `get` 혹은 `iterator`에서 사용되고 있는 모든 `version`들은 유지되어야하며 어떠한 용도로도 사용되고 있지 않은 out-of-date `version`은 drop되어야 한다. 이 과정에서 그 어떠한 `version`에 의해서도 사용되지 않는 파일들은 제거되어야 한다. 
 
-__(예시)__
+__(예시)__  
 3개의 파일을 가진 `version`을 초기에 가지고 있었다고 가정하자.
 ```bash
 v1 = {f1, f2, f3}  (current)
@@ -82,3 +82,73 @@ files on disk = f1, f5
 - 종종 reader 은 `version` 에 대한 reference 를 직접 잡고 있을 때도 있지만 대부분의 경우 reader 은 `super version` 이라는 간접적인 자료 구조를 사용한다. 후자의 경우 실제 `version`에 대한 reference 를 잡고 있는 것은 `super version` 이며 해당 방법은 locking 등을 피하는 등의 최적화 기회를 갖고 있다. 
 
 - RocksDB 는 `version` 에 대한 자료구조를 `VersionSet` 이라는 구조체로 관리하고 있으며 어떤 `version` 이 최신의 버전인지 기억하고 있다. 이 때, 각각의 `column family`는 별개의 LSM 이기 때문에 `column family` 별로 `version` list 를 관리한다. 하지만 `VersionSet` 은 DB 당 하나이다. 
+
+---
+## 3. Iterator Implementation
+[참조](https://github.com/facebook/rocksdb/wiki/Iterator-Implementation)
+
+### RocksDB Iterator 
+- RocksDB Iterator 은 유저가 DB를 정렬된 형태로 앞/뒤로 iterate 할 수 있도록 한다. 또한 특정한 key 를 DB 안에서 찾을 수 있도록 한다. 이를 위해서 iterator 은 DB를 정렬된 스트림으로서 접근할 수 있다. RocksDB iterator 은 `DBIter` 이라는 이름으로 구현되었다. 
+
+#### DBIter
+> Interface: Iterator
+- `DBIter`은 `InternalIterator`(`Merging Iterator`)의 wrapper `Internal Iterator` 내부의 키를 파싱해서 유저키로 보여주는 역할을 한다. 
+
+__Example__
+아래의 `InternalIterator`는 다음과 같이 구성되어 있다.
+```bash
+InternalKey(user_key="Key1", seqno=10, Type=Put) | Value="KEY1_VAL2"
+InternalKey(user_key="Key1", seqno=9 , Type=Put) | Value="KEY1_VAL1"
+InternalKey(user_key="Key2", seqno=16, Type=Put) | Value="KEY2_VAL2"
+InternalKey(user_key="Key2", seqno=15, Type=Delete) | Value="KEY2_VAL1"
+InternalKey(user_key="Key3", seqno=7 , Type=Delete) | Value="KEY3_VAL1"
+InternalKey(user_key="Key4", seqno=5 , Type=Put) | Value="KEY4_VAL1"
+```
+하지만 `DBIter` 이 유저에게 보여주는 것은 아래와 같다. 
+```bash
+Key="Key1" | Value = "KEY1_VAL2"
+Key="Key2" | Value = "KEY2_VAL2"
+Key="Key4" | Value = "KEY4_VAL1"
+```
+
+#### Merging Iterator
+> Interface: InternalIterator 
+- `MergingIterator`은 많은 child iterator 들로 구성되어 있다. `MergingIterator` 은 기본적으로 Iterator들의 heap 이다. `MergingIterator` 안 heap에 모든 child iterator 들을 넣고 하나의 소팅된 스트림처럼 보여준다.
+
+__Example__
+Child Iterator 는 아래와 같다.
+```bash
+= Child Iterator 1 =
+InternalKey(user_key="Key1", seqno=10, Type=Put) | Value="KEY1_VAL2"
+
+= Child Iterator 2 =
+InternalKey(user_key="Key1", seqno=9 , Type=Put) | Value="KEY1_VAL1"
+InternalKey(user_key="Key2", seqno=15, Type=Delete) | Value="KEY2_VAL1"
+InternalKey(user_key="Key4", seqno=5 , Type=Put) | Value="KEY4_VAL1"
+
+= Child Iterator 3 =
+InternalKey(user_key="Key2", seqno=16, Type=Put) | Value="KEY2_VAL2"
+InternalKey(user_key="Key3", seqno=7 , Type=Delete) | Value="KEY3_VAL1"
+```
+`MergingIterator` 은 child Iterators 들을 heap 에 저장하고 하나의 소팅된 스트림으로 보여준다.
+```bash
+InternalKey(user_key="Key1", seqno=10, Type=Put) | Value="KEY1_VAL2"
+InternalKey(user_key="Key1", seqno=9,  Type=Put)    | Value = "KEY1_VAL1"
+InternalKey(user_key="Key2", seqno=16, Type=Put)    | Value = "KEY2_VAL2"
+InternalKey(user_key="Key2", seqno=15, Type=Delete) | Value = "KEY2_VAL1"
+InternalKey(user_key="Key3", seqno=7,  Type=Delete) | Value = "KEY3_VAL1"
+InternalKey(user_key="Key4", seqno=5,  Type=Put)    | Value = "KEY4_VAL1"
+```
+
+#### MemtableIterator
+> Interface: InternalIterator
+- `MemtableRep::Iterator`의 래퍼로 모든 memtable 은 memtable 안에 있는 key/value 들을 정렬된 스트림으로 보여주기 위해서 자신만의 iterator 을 가진다. 
+
+#### BlockIter
+> Interface: InternalItertor
+- 이 iterator 은 SST 파일에서 block이 인덱스 블록이든 데이터 블록이든 상관없이 block 을 읽기 위해서 사용된다. SST 파일블록은 정렬되어 있고 바뀌지 않기 때문에 우리는 block 을 메모리에 로드해서 `BlockIter` 을 만들 수 있다.
+
+#### TwoLevelIterator
+> Interface: InternalIterator
+- `TwoLevelIterator`은 두개의 Iterator 로 구성된다: `first_level_iter_`(for index block)/`second_level_iter`(for data block);
+- `first_level_iter_` 은 `second_level_iter_`을 찾아내기 위해서 사용되며, `second_level_iter_`은 실제 읽는 데이터를 가리킨다. 
