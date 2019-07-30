@@ -172,3 +172,158 @@ virtual void Add(const string& key, uint64_t value) {
 ```
 - 위의 operation은 Counter을 구현할 때에는 합리적일 수 있으나 다른 경우가 있을 수 있다. 예를 들어, 유저가 사용했던 위치를 추적해야하는 경우 현존하는 리스트에 새로운 위치를 추가하는 것이 일반적일 것이다. 이 경우 Append operation: `db->Append(user_key, serialize(new_location))` 이 필요하다. 즉, 이와 같이 어떤 client value 타입에 대한 요청인가에 따라 read-modify-write 작업의 시멘틱이 달라질 수 있다. 라이브러리를 일반화하여 사용하기 위해서는 operation 을 더 추상화하고 클라이언트가 semantic을 특정할 수 있도록 허용해야 한다. 이러한 요구 사항으로 `Merge` operation 을 제안하게 되었다. 
 
+### What
+- read-modify-write 를 간단한 abstrace 인터페이스로 encapsulates 함.
+- 반복적인 `Get()` calls 로 인한 비용을 줄일 수 있다.
+- Back-end 최적화를 수행함으로써 언제/어떻게 operand 들을 아래 시맨틱 변화 없이 결합할 수 있을지 결정한다. 
+
+
+### Compaction
+- Compaction 은 *외적으로 관찰할 수 있는 state* 에 영향을 주지 않고 key의 history를 줄이는 프로세스이다. *외적으로 관찰할 수 없는 state* 란 무엇일까? 하나의 스냅샷은 기본적으로 sequence number로 표현된다.
+```bash
+# Sn means snapshot
+K:  OP1 OP2 OP3 OP4 OP5 ... OPn
+       (S1)     (S2)       (S3)
+```
+- 각각의 스냅샷에 대해서 rocksdb는 가장 최신의 operation 을 supporting operation으로 지정할 수 있다. (OP2는 S1의 supporting operation / OP4 는 S2의 supporting operation)
+ - 분명한 것은 외적으로 관찰가능한 state 에 영향을 주지 않고 supporting operation을 drop 하는 것은 불가능하다. 다른 operation은 어떨까? 위의 예시에서 full Compaction 은 값 K에 대해서 OP2, OP4 그리고 OPn history를 줄일 것이다. 이유는 간단하다: Put 이나 Delete 는 이전의 operation의 영향을 받지 않는다.
+
+- 하지만 Merge 가 있으면 과정이 조금 바뀌게 된다. 몇몇 merge operand 가 특정 스냅샷에 대한 supporting operation 이 아니더라도 쉽게 그 과정을 제외할 수 없다. 왜냐하면 merge operation이 정확성에 의존할 수 있기 때문이다. 또한 사실 이는 우리가 이전의 Put 혹은 Delete operation을 제거할 수 없음을 의미한다. (이해를 위해서 아래의 예시 참조)
+
+- 이를 위해서 rocksdb 는 newest에서 oldest 로 merge operand stacking 을 수행한다. 아래의 케이스(어떤 경우든 먼저 특정 케이스가 발생하면)가 발생하면 stacking을 멈추고 stack 을 처리한다. 
+  1. Put/Delete : FullMerge(value or nullptr, stack) 를 부름.
+  2. End-of-key-history : FullMerge(nullptr, stack) 를 부름.
+  3. Supporting operation(snapshot) : 아래 참조
+  4. End-of-file : 아래 참조
+  
+- Snapshot 에 도달하면 merging 프로세스를 멈추어야한다. Merging을 잠시 멈추고 다시 도달한 supporting operation 에서 컴팩션을 수행해야 한다. 이와 비슷하게 compaction이 끝나 end-of-file에 도달하면 단순히 FullMerge 를 적용할 수 없다(다른 파일에 compaction에 속하는 다른 엔트리가 존재할 수 있기 때문). 이 경우에도 snapshot에 도달했을 때와 비슷하게 동작하며 이러한 과정을 끝낸 operands 들은 마치 supporting operator와 같이 간주되어 drop 될 수 없다. 
+
+
+
+
+
+__(Examaple)__
+```bash
+# counter K 는 0에서 시작, 여러차례 Add가 발생한다. 중간 중간 2로 reset 되는 경우가 있으며 그 이후 여러차례 Add가 다시한번 반복된다. 
+
+K:    0    +1    +2    +3    +4     +5      2     +1     +2
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+We show it step by step, as we scan from the newest operation to the oldest operation
+
+K:    0    +1    +2    +3    +4     +5      2    (+1     +2)
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+A Merge operation consumes a previous Merge Operation and produces a new Merge operation (or a stack)
+      (+1  +2) => PartialMerge(1,2) => +3
+
+K:    0    +1    +2    +3    +4     +5      2            +3
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+K:    0    +1    +2    +3    +4     +5     (2            +3)
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+A Merge operation consumes a previous Put operation and produces a new Put operation
+      (2   +3) =>  FullMerge(2, 3) => 5
+
+K:    0    +1    +2    +3    +4     +5                    5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+A newly produced Put operation is still a Put, thus hides any non-Supporting operations
+      (+5   5) => 5
+
+K:    0    +1    +2   (+3    +4)                          5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+(+3  +4) => PartialMerge(3,4) => +7
+
+K:    0    +1    +2          +7                           5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+A Merge operation cannot consume a previous Supporting operation.
+       (+2   +7) can not be combined
+
+K:    0   (+1    +2)         +7                           5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+(+1  +2) => PartialMerge(1,2) => +3
+
+K:    0          +3          +7                           5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+K:   (0          +3)         +7                           5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+
+(0   +3) => FullMerge(0,3) => 3
+
+K:               3           +7                           5
+                 ^           ^                            ^
+                 |           |                            |
+              snapshot1   snapshot2                   snapshot3
+```
+
+#### Compaction Algorithm
+Compaction 과정을 알고리즘화하여 나타내면 아래와 같다.
+```bash
+Compaction(snaps, files):
+  // <snaps> 는 스냅샷 set을 의미한다 (i.e.: sequence number 리스트)
+  // <files> compaction의 대상이 되는 파일 리스트
+  Let input = a file composed of the union of all files
+  Let output = a file to store the resulting entries
+
+  Let stack = [];       // 실제로 stack이 아니라 deque이지만 수도코드로 개념화 하기에는 stack이 더 용이
+  for each v from newest to oldest in input:
+    clear_stack = false
+    if v.sequence_number is in snaps:
+      clear_stack = true
+    else if stack not empty && v.key != stack.top.key:
+      clear_stack = true
+
+    if clear_stack:
+      write out all operands on stack to output (in the same order as encountered)
+      clear(stack)
+
+    if v.type is "merge_operand":
+      push v to stack
+        while (stack has at least 2 elements and (stack.top and stack.second_from_top can be partial-merged)):
+          v1 = stack.pop();
+          v2 = stack.pop();
+          result_v = client_merge_operator.PartialMerge(v1,v2)
+          push result_v to stack
+    if v.type is "put":
+      write client_merge_operator.FullMerge(v, stack) to output
+      clear stack
+    if v.type is "delete":
+      write client_merge_operator.FullMerge(nullptr, stack) to output
+      clear stack
+
+  If stack not empty:
+    if end-of-key-history for key on stack:
+      write client_merge_operator.FullMerge(nullptr, stack) to output
+      clear(stack)
+    else
+      write out all operands on stack to output
+      clear(stack)
+
+  return output
+```
