@@ -152,3 +152,23 @@ InternalKey(user_key="Key4", seqno=5,  Type=Put)    | Value = "KEY4_VAL1"
 > Interface: InternalIterator
 - `TwoLevelIterator`은 두개의 Iterator 로 구성된다: `first_level_iter_`(for index block)/`second_level_iter`(for data block);
 - `first_level_iter_` 은 `second_level_iter_`을 찾아내기 위해서 사용되며, `second_level_iter_`은 실제 읽는 데이터를 가리킨다. 
+
+
+## 4. Merge Operator
+
+### Why
+- RocksDB는 3가지 간단한 오퍼레이션 Get, Put, Delete 를 제공한다. 종종 현존하는 데이터를 업데이트하는 경우가 생기게 되는데 락스디비에서 이를 수행하기 위해서는 해당 데이터를 읽어낸 후 (Get), 수정하고 다시 쓰는 (Put) 과정이 필요하다. 
+
+- High level opertaion인 Set, Add, Get, Remove 를 구현한다고 가정했을 때 Add 를 제외한 다른 operation 들은 락스디비에서 제공하는 operation과 바로 매칭되지만 (Set-Put, Get-Get, Remove-delete) Add (Get and Set) 는 그렇지 않다. 이는 성능 문제 등을 내포하고 있다 (락스 디비의 랜덤 read 성능은 좋지 못함).
+
+- 위의 operation을 서비스로 제공한다고 가정했을 때 최근 서버에는 많은 코어들이 사용됨을 고려하면 해당 서비스를 대부분 멀티스레드로 사용할 것이다. 만일 쓰레드가 key space 에 따라서 파티션되어있지 않으면 서로 다른 쓰레드가 동일한 데이터에 대해서 Add 요청을 여러번 보내서 동시에 수행될 수 있다. 만일 우리가 엄격한 consistency를 가지고 있다면 동기화를 통해서 락을 잡는 과정에서 오버헤드가 증가할 것이다. 
+
+- 이에 아래와 같이 RocksDb 가 직접적으로 Add 기능을 제공하면 어떨까? 
+```bash
+virtual void Add(const string& key, uint64_t value) {
+  string serialized = Serialize(value);
+  db->Add(add_option, key, serialized);
+}
+```
+- 위의 operation은 Counter을 구현할 때에는 합리적일 수 있으나 다른 경우가 있을 수 있다. 예를 들어, 유저가 사용했던 위치를 추적해야하는 경우 현존하는 리스트에 새로운 위치를 추가하는 것이 일반적일 것이다. 이 경우 Append operation: `db->Append(user_key, serialize(new_location))` 이 필요하다. 즉, 이와 같이 어떤 client value 타입에 대한 요청인가에 따라 read-modify-write 작업의 시멘틱이 달라질 수 있다. 라이브러리를 일반화하여 사용하기 위해서는 operation 을 더 추상화하고 클라이언트가 semantic을 특정할 수 있도록 허용해야 한다. 이러한 요구 사항으로 `Merge` operation 을 제안하게 되었다. 
+
