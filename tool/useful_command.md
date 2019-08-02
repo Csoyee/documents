@@ -35,6 +35,9 @@ $> cat "sample_file" | awk '{sum += $1} END {print sum}'
 
 # 평균 계산
 $> cat "sample_file" | awk '{sum += $1 ; count += 1} END {print sum/count}'
+
+# delimeter 사용 (예시 .)
+$> cat "sample_file" | awk -F "." '{sum+=$1} END {print sum}'
 ```
 
 ## sort 
