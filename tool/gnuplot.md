@@ -113,3 +113,33 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 # 사용할 시간 포맷을 명시 -- [Y:년/m:월/d:일/H:시/M:분/S:초]
 > set timefmt '%Y/%m/%d-%H:%M:%S'
 ```
+
+#### 6-6. 서로 다른 열에 대한 연산 결과를 결과 데이터로 넣기
+__동일 파일__  
+(e.g..)
+fileA.txt   
+> 2 4  
+> 3 2  
+> 1 1  
+
+```bash
+plot "fileA.txt" using 0:($1+$2) title "SUM" with lines,\
+  "fileA.txt" using 0:($1+$2)/2 title "AVG" with lines
+```
+
+
+__서로 다른 파일의 열을 합할 때__  
+(e.g..)  
+fileA.txt     
+> 1 4  
+> 2 2  
+> 3 1  
+fileB.txt
+> 1 2  
+> 2 3  
+> 3 1  
+
+```bash
+plot "< paste fileA.txt fileB.txt" using 0:($2+$4) title "SUM" with lines,\
+  "< paste fileA.txt fileB.txt" using 0:($2+$4)/2 title "AVG" with lines
+```
