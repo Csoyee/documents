@@ -11,6 +11,30 @@ $ fallocate -l x A.txt
 $ fallocate -l yG A.txt
 ```
 
+## paste
+```bash
+# example file content
+#### fileA.txt
+# 1 2
+# 3 4
+# 5 6
+####
+#### fileB.txt
+# 7 8
+# 9 10
+# 11 12
+####
+
+$ paste fileA.txt fileB.txt
+
+# result 
+####
+# 1 2 7 8
+# 3 4 9 10
+# 5 6 11 12
+####
+```
+
 ## Cut string 
 - delimeter "a" 를 기준으로 n 번 째 단어를 출력하라  
 ```bash
