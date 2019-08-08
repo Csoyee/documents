@@ -140,6 +140,6 @@ fileB.txt
 > 3 1  
 
 ```bash
-plot "< paste fileA.txt fileB.txt" using 0:($2+$4) title "SUM" with lines,\
-  "< paste fileA.txt fileB.txt" using 0:($2+$4)/2 title "AVG" with lines
+> plot "< paste fileA.txt fileB.txt" using 0:($2+$4) title "SUM" with lines,\
+>  "< paste fileA.txt fileB.txt" using 0:($2+$4)/2 title "AVG" with lines
 ```
