@@ -134,6 +134,7 @@ fileA.txt
 > 1 4  
 > 2 2  
 > 3 1  
+
 fileB.txt
 > 1 2  
 > 2 3  
