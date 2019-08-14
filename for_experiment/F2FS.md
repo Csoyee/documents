@@ -1,5 +1,6 @@
 # F2FS 
 
+[관련문서](https://github.com/torvalds/linux/blob/master/Documentation/filesystems/f2fs.txt)
 
 ## f2fs tool 설치
 ```bash
@@ -21,4 +22,8 @@ $> modprobe f2fs
 ## mount
 ```bash
 $> sudo mount -t f2fs [device name] [mount path]
+
+# discard option mount (default: discard off)
+$> sudo mount -t f2fs -odiscard [device name] [mount path]
 ```
+
