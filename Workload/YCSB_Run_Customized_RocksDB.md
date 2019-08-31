@@ -62,7 +62,6 @@ $> git clone https://github.com/brianfrankcooper/YCSB
 $> bin/ycsb.sh load rocksdb -s -P workloads/workloada -p rocksdb.dir=[rocksdb directory]
 ```
 모두 core dependency 파일이 없기 때문이다. `$YCSB_HOME/core/pom.xml` 에서 htrace와 hdrhistogram에 대한 dependency 코드를  `$YCSB_HOME/rocksdb/pom.xml` 의 dependencies 파위에 적어준다. [참조](https://github.com/Csoyee/YCSB/commit/0419da58e1d6936970f548bfb34a23024bc90e10)
-```
 
 그리고 나서 명령을 다시 수행하면 컴파일이 된다.
 ```bash
