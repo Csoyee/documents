@@ -12,7 +12,7 @@ Fio 3.13 version 부터 io_uring engine 을 지원.
 $> fio [--other options] --io_engine=io_uring 
 ```
 
-제대로 동작하는지 확인, 나의 경우 ftrace 를 통해서 io_uring call 이 불리는지 확인하였다. 
+제대로 동작하는지 확인, 나의 경우 [ftrace](https://github.com/Csoyee/documents/blob/master/tool/ftrace.md) 를 통해서 io_uring call 이 불리는지 확인하였다. 
 아래와 같이 `__x64_sys_io_uring_enter`, `io_ring_submit`, `io_get_sqring.isra.21()` 등의 io_uring 관련 시스템 함수가 불린다.
 
 ![image](https://user-images.githubusercontent.com/18457707/66024940-2f85ce80-e530-11e9-8c7c-9a2a5686d75b.png)
