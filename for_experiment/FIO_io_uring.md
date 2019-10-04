@@ -3,8 +3,8 @@
 [FIO source code](https://github.com/axboe/fio)
 Fio 3.13 version 부터 io_uring engine 을 지원.
 
-> upgrade FIO version ! (sksms 3.16.7)
-> io_uring 은 커널버전 5.1 이후부터 지원되므로 io_uring test를 위해서는 kernel 버전도 5.1 버전 이후로 맞춰주어야 한다. (나는 5.3)
+> - FIO version 변경 (나는 3.16.7)  
+> - io_uring 은 커널버전 5.1 이후부터 지원되므로 io_uring test를 위해서는 kernel 버전도 5.1 버전 이후로 맞춰주어야 한다. (나는 5.3)  
 
 
 ## How to use io uring
