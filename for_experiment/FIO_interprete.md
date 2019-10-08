@@ -14,6 +14,10 @@
 
 #### latency
 다음으로 latency 와 관련된 결과를 확인할 수 있다. latency 관련 결과 중 처음으로 확인할 수 있는 것은 `slat` 으로 이는 submission latency 를 의미한다. 
+
+![image](https://user-images.githubusercontent.com/18457707/66372160-4e78da80-e9e0-11e9-9895-898040347b65.png)  
+slat 과 clat 에 대해서는 위의 사진을 참조하자.
+
 Submission latency 는 말그대로 "커널이 submit 된 IO 를 수행할 때까지 얼마만큼의 시간이 걸렸는지"를 의미한다.
 
 ```bash
