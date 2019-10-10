@@ -22,7 +22,18 @@ $ echo 1 > /sys/module/nvme/parameters/poll_queues
 하지만 이를 세팅하여도 io_poll 똑같은 에러가 발생한다.
 
 ### Solve
-Kernel nvme driver 에서 Nvme device 를 unbind 한 후 다시 bind 를 해주니 에러가 없어졌다.
+Kernel nvme driver 에서 Nvme device 를 unbind 한 후 다시 bind 를 해주고 `io_poll`을 수정하니 에러가 없어졌다.
 
+### Test
+사용 SSD: Optane SSD
+- psync2 engine 상에서 FIO test 를 수행하였다. direct random read with Interrupt mode vs. direct random read with Polling mode.
+#### Interrupt mode
+![image](https://user-images.githubusercontent.com/18457707/66545200-2a9acd80-eb75-11e9-826c-1afb3bff5064.png)
+#### Polling mode
+![image](https://user-images.githubusercontent.com/18457707/66545284-4c945000-eb75-11e9-98a4-42be21c4fda7.png)
+- ctx 가 9856080 --> 44 로 확연히 감소한 것을 확인할 수 있으며 IOPS, BW, latency 입장에서 약 18% 의 성능 개선 확인
+- 따로 로그로 뽑지 않았으나 htop 을 통해서 모니터링 한 결과 polling 모드에서 하나의 cpu 를 100% 로 계속 사용하는 것을 확인
+
+---
 ### TODO
-io_poll 을 1로 설정하고 다시 fio 를 수행하였으나 [ftrace](https://github.com/Csoyee/documents/blob/master/tool/ftrace.md) 를 떴을 때 `do_IRQ function` 이 불리고 `nvme_poll function` 이 불리지 않는 것을 확인함.
+engine 을 io_uring 으로 설정하고 io_poll 을 1로 설정하고 다시 fio 를 수행하였으나 [ftrace](https://github.com/Csoyee/documents/blob/master/tool/ftrace.md) 를 떴을 때 `do_IRQ function` 이 불리고 `nvme_poll function` 이 불리지 않는 것을 확인함.
