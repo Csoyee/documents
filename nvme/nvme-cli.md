@@ -3,11 +3,11 @@
 
 ## READ and WRITE
 ```bash
-$ echo "write new data!" | sudo nvme write /dev/nvme0n1 --start-block=10 --block-count=1 --data-size=512 --show-command  
+$ echo "write new data!" | sudo nvme write /dev/nvme0n1 --start-block=10 --data-size=512 --show-command  
 opcode       : 01
 flags        : 00
 control      : 0000
-nblocks      : 0001
+nblocks      : 0000
 rsvd         : 0000
 metadata     : 0
 addr         : 250f000
@@ -25,17 +25,17 @@ nvme write 의 경우 읽고 쓸 파일을 제공하지 않으면 기본적으�
 위의 명령을 수행할 때 어떻게 내려가는지 확인하기 위해서 `--show-command` 옵션을 붙였다. opcode 는 nvme specification 에 따라 1번이다. 
 하나의 블록에 대한 요청이며 이 때 start-block 번호가 10번이기 대문에 slba 는 'a' 가 된다.
 
-> block-count 를 1로 설정해줘서 nblock 이 1로 설정되었는데 다른 예시들을 보니 해당 옵션을 사용하지 않는 경우도 많았다. NLB 가 0's based value 이기 때문?
+> NLB is zero's base
 
 쓴 데이터를 읽기 위해서 read 를 수행해보겠다.
 
 
 ```bash
-$ sudo nvme read /dev/nvme0n1 --start-block=10 --block-count=1 --data-size=512 --show-command
+$ sudo nvme read /dev/nvme0n1 --start-block=10 --data-size=512 --show-command
 opcode       : 02
 flags        : 00
 control      : 0000
-nblocks      : 0001
+nblocks      : 0000
 rsvd         : 0000
 metadata     : 0
 addr         : 17a8000
