@@ -51,8 +51,9 @@ Read 의 opcode 는 2 번이다.
 마지막에서 두 번째 줄에 제대로 data가 읽혀오는 것을 알 수 있다.
 
 
-## IOCTL
-IOCTL passthrough 를 통해 유저가 정의한 IO command 를 특정 디바이스에 보낼 수 있다. 
+## IO-PASSTHRU
+io-passthru 를 통해 유저가 정의한 IO command 를 특정 디바이스에 보낼 수 있다. 
+(이 때 만일 해당 command 를 admin command 로 내리고 싶다면 io-passthru 가 아니라 admin-passthru 를 확인!)
 
 ### options
 ```
@@ -81,7 +82,7 @@ IOCTL passthrough 를 통해 유저가 정의한 IO command 를 특정 디바이
   [  --write, -w ]                      --- set dataflow direction to send
 ```
 
-IOCTL passthrough 명령을 활용하여 위의 read 명령을 재현해보면 아래와 같다.
+IOCTL passthru 명령을 활용하여 위의 read 명령을 재현해보면 아래와 같다.
 
 Read command 에서 lba 영역은 cdb10, cdb11 에 걸쳐 있기 때문에 cdb10 의 값을 10으로 설정하여 lba 10 의 데이터를 읽어올 수 있다. 
 
