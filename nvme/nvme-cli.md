@@ -82,7 +82,7 @@ io-passthru 를 통해 유저가 정의한 IO command 를 특정 디바이스에
   [  --write, -w ]                      --- set dataflow direction to send
 ```
 
-IOCTL passthru 명령을 활용하여 위의 read 명령을 재현해보면 아래와 같다.
+IO-passthru 명령을 활용하여 위의 read 명령을 재현해보면 아래와 같다.
 
 Read command 에서 lba 영역은 cdb10, cdb11 에 걸쳐 있기 때문에 cdb10 의 값을 10으로 설정하여 lba 10 의 데이터를 읽어올 수 있다. 
 
@@ -107,3 +107,27 @@ cdw15        : 00000000
 timeout_ms   : 00000000
 write new data!
 ```
+
+### 상세 구현
+> nvmecli 를 통해서 command 를 보내지 않고 ioctl 함수를 통해서 직접 보내고 싶을 때 참고하려고 메모..
+
+io-passthru command 에 대한 상세 구현은 nvme-cli 의 *nvme.c* 의 `passthru (@line 788)` 함수를 참조하자. 해당 함수는 command 를 통해서 받은 argument를 파싱하여 command 를 세팅하고 만들어진 command 를 `nvme_passthru` 함수로 보낸다. `nvme_passthru` 함수는 *nvme-ioctl.c* 함수에 구현되어 있다. (사실 해당 함수는 그냥 command 를 ioctl 로 전달하기만 하는 함수이다. 따라서 우리는 `passthru` 함수만 본다!)
+
+
+사실 단순 parsing 작업이 주를 이루지만 최종적으로 만들고자 하는 command 는 show_command 를 통해서 보여주는 결과에서 확인할 수 있다. DWORD16 의 결과로 위의 `io-passthru` 사용 예시에서 확인할 수 있듯이 opcode 에서 시작하여 여러 정보를 보낸다. 다른 건 거의 1:1 매칭이 되기 때문에 data 가 어떻게 전달되는지만 확인하자.
+
+#### IOCTL 사용할 때 data 어떻게 보내고 받는지!
+IO-passthru option 을 확인하면 --read, --write 라는 옵션을 확인할 수 있다. 해당 옵션은 데이터의 방향을 결정한다. 만일 --read option 을 사용하는 경우에는 데이터를 받아올 버퍼 영역을 할당해서 해당 address 를 ioctl command 로 제공해야하고 write 하는 경우에는 쓰고자하는 데이터를 버퍼에 넣고 해당 address 를 제공해야한다.
+
+1. READ
+- Pagesize에 맞추어 Align 된 버퍼 영역을 할당한다 (posix_memalign) 
+- 해당 영역을 옵션으로 받은 data_len 만큼 prefill 데이터로 채운다 (memset)
+
+2. WRITE
+- READ 와 똑같은 과정을 거친다.
+- 데이터를 찾아서 넣는다. 이 때 nvme-cli 에서는 데이터를 특정 파일에서 읽어오는데 input-file 이 없는 경우 default 는 STDIN 이다. 
+
+> Write 시에 데이터를 어떻게 받을지는 사용자가 바꿀 수 있다. 다만 nvme-cli 에서는 위와 같은 방식을 쓰고 있다. 
+
+
+최종적으로 DWORD[8] 로 들어갈 address 는 `(__u64)(uintptr_t)data` 가 된다. 
