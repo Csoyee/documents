@@ -1,6 +1,6 @@
 # SPDK Document
 
-Reference: [spdk document](https://spdk.io/doc/about.html)
+Reference: [spdk document](https://spdk.io/doc/about.html), [spdk paper](https://ieeexplore.ieee.org/abstract/document/8241103)
 
 ## What is SPDK
 
@@ -12,6 +12,14 @@ Storage Performance Development Kit (SPDK) 는 높은 성능과, 확장성(sacla
 
 SPDK 의 핵심은 user space, polled-mode, asynchronous, lockless Nvme 드라이버라는 점이다. 이러한 특성들을 통해서 zero-copy 와 높은 하드웨어 접근 병렬성을 응용에게 제공한다. 
 
+## System Design and implementation 
+
+SPDK 는 커스터마이징된 고성능의 스토리지 응용을 빌드하는데 필요한 라이브러리들읠 모음이다. SPDK 는 크게 4개의 주요 구성요소로 이루어져있다. (i,e., drivers, app scheduling, storage devices and storage protocols)
+
+1. app scheduling : 응용에 이벤트 프레임워크를 제공한다. 
+2. drivers : user space polled mode NVMe driver 
+3. storaged devices : driver 을 통해 보여지는 장치를 추상화하여 위의 스토리지 응용에 block I/O 인터페이스를 제공한다. 
+4. storage protocols: 다양한 스토리지 프로토콜을 제공하기 위해 SPDK 프레임워크 위에 구현된 응용 
 
 
 ## User Space Drivers
