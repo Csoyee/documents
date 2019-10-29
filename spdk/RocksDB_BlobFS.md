@@ -1,6 +1,18 @@
 # BlobFS Getting Started Guide RocksDB Integration
-
 [참고링크](https://spdk.io/doc/blobfs.html)
+
+
+## BlobFS
+참고 논문: SPDK: A development kit to build high performance storage applications
+
+### Blobstore
+Blobstore 은 기존의 파일시스템 대신 상위 레벨의 스토리지 서비스를 지원하는 로컬 스토리지 시스템으로 사용하도록 설계된 persistency, power-fail safe 블록 allocator 이다. 상위 레벨 서비스로는 RocksDB 와 같은 키밸류 스토어나 MYSQL 과 같은 로컬 데이터베이스 혹은 Cassandra 와 같은 분산 시스템이 될 수 있다. Blobstore 은 일반적ㅇ니 목적의 파일시스템을 위해서 설계된 것이 아니고 내부적으로 POSIX 를 준수하지도 않는다. 혼란을 피하기 위해서 파일이나 객체가 아니라 `blob` 이라는 용어를 사용한다. Blobstore 은 비동기적이고 캐싱되지 않은 병렬적인 읽기 쓰기 작업을 `blob` 이라고 불리우는 블록 디바이스의 블록 그룹에 수행할 수 있도록 설계되었다. Blob 는 일반적으로 큰 편으로 적어도 100KB 의 크기이다. 다만 항상 block size의 배수 값을 유지해야한다.
+
+### Blobfs
+Blobfs 는 blobstore 위에 설계된 간단한 파일시스템이다. BlobFS 는 현재 오직 flat 한 네임스페이스만을 제공하며 디렉토리 등을 제공하지 않는다. 파일의 이름은 각각의 blob에 xattrs 로 저장되며 이는 특정 파일을 찾는데 O(n)의 operation 을 필요로 함을 의미한다. SPDK btree 구현은 징행중이다 (2017년 논문 기준). 파일 write 는 무조건 파일의 끝에 append 하는 방식으로 이루어지며 random write 기능 역시도 추후 제공 예정이다. 현재 BlobFS 는 RocksDB 상에서만 테스팅 되고 있다.
+
+#### BDEV
+SPDK bdev 의 목적은 유저스페이스 드라이버에 읳새ㅓ 인지되는 디바이스를 추상화하고 다른 3rd party 라이브버리가 응용에 블록 서비스 인터페이스를 보여주는 것이다. SPDK application 이 사용하는 block storage 는 SPDK bdev 레이어를 통해서 제공된다. 
 
 ## Getting Started
 ### SPDK 다운로드 및 빌드하기 
