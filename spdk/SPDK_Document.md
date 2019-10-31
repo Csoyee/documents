@@ -8,6 +8,7 @@ Reference: [spdk document](https://spdk.io/doc/about.html), [spdk paper](https:/
 - [System Design and implementation](#System-Design-and-implementation)
 - [User Space Drivers](#User-Space-Drivers)
 - [Direct Memory Access From User Space ](#Direct-Memory-Access-From-User-Space)
+- [Flash Translation Layer](#Flash-Translation-Layer)
 ---
 
 ## What is SPDK
@@ -118,3 +119,60 @@ L2P mapping 이라고도 불리우며 논리적 주소와 디스크 상의 물�
  동일한 LBA 에 대한 쓰기가 이전의 물리적 위치를 무효화하기 때문에 밴드 내의 몇몇 블록들은 기본적으로 공간을 낭비하는 오래된 데이터를 가질 수 있다. 이미 쓰인 블록을 덮어쓰기 할 수 있는 방법은 없기 때문에 해당 데이터는 모든 chunck 가 리셋될 때까지 머물러야 한다. 이로 인해서 모든 band가 유효한 데이터를 가지고 있어서 어떤 band 도 지워질 수 있는 상황이 발생하고 이로 인해서 더 이상 write 를 수행할 수 없게 된다. 따라서 유효한 데이터를 이동시키고 모든 band 를 무효화하여 다시 쓸 수 있도록 하는 방법이 필요하다 .
 
 데이터 재배치를 담당하는 모듈은 `reloc` 이라고도 불린다. 만일 밴드가 degfragmentation 을 하도록 선택되거나 ANS(asynchronous NAND mgmt) 이벤트를 받으면 적절한 블록들이 이동되어야 한다고 마킹된다. `reloc` 모듈은 그렇게 마킹된 블록들을 가지는 밴드에서 validity 를 체크한다음에 해당 데이터 들이 여전히 유효한 경우 복사한다. 
+
+
+### Usage
+
+TODO, 아래 부분 해보기!
+
+#### Prerequisite
+
+SPDK QEMU fork: [spk-3.0.0](https://github.com/spdk/qemu/tree/spdk-3.0.0)
+
+#### Configuring QEMU
+- serial: serial number
+- lver: OCSSD 표준 버전 (0-disabled, 1-"1.2", 2-"2.0"), libfio 은 2.0 만 지원한다.
+- lba_index: 디폴트 LBA 포멧으로 libfio 는 4K 단위의 데이터만 지원한다. 
+- lnum_ch: 그룹 개수
+- lnum_lun: 병렬 그룹 개수
+- lnum_pln: plane 개수
+- lpgs_per_blk: chunk 당 페이지의 개수
+- lblks_per_pln
+- laer_thread_sleep
+- lmetadata: metadata file
+
+Example:
+```bash
+$ /path/to/qemu [OTHER PARAMETERs]\
+   -drive format=raw,file=/path/to/data/file,if=none,id=myocssd0
+   - device nvme,drvie=myocssd0,serial=deadbeef,lver=2,lba_index=3,lnum_ch=1,lnum_lun=8,lnum_lpn=4,lpgs_per_blk=1536,lsecs_per_pg=4,lblks_per_pln=512,lmetadata=/path/to/md/file
+```
+예시를 확인하면 디바이스는 1채널 8개의 병렬 유닛, 병렬 유닛당 512 개의 청크, 청크당 24576 (lnum_pln * lpgs_per_blk * lsecs_per_pg) 개의 논리 블록이 세팅되었다. 각각의 논리 블록이 4KB 의 크기를 갖기 384GB (8\*512\*24576\*4096 B) 사이즈의 파일을 생성할 수 있다.
+ 
+ #### Configuring SPDK
+ 
+ 드라이브가 제대로 애뮬레이션 되었음을 확인하기 위해서 NVMe identify app 의 출력 결과를 확인하면 된다. 
+ 
+ ```bash
+ $ examples/nvme/identify/identify
+ =====================================================
+NVMe Controller at 0000:00:0a.0 [1d1d:1f1f]
+=====================================================
+Controller Capabilities/Features
+================================
+Vendor ID:                             1d1d
+Subsystem Vendor ID:                   1af4
+Serial Number:                         deadbeef
+Model Number:                          QEMU NVMe Ctrl
+... other info ...
+Namespace OCSSD Geometry
+=======================
+OC version: maj:2 min:0
+... other info ...
+Groups (channels): 1
+PUs (LUNs) per group: 8
+Chunks per LUN: 512
+Logical blks per chunk: 24576
+... other info ...
+```
+
