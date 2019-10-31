@@ -2,6 +2,14 @@
 
 Reference: [spdk document](https://spdk.io/doc/about.html), [spdk paper](https://ieeexplore.ieee.org/abstract/document/8241103)
 
+---
+# Index
+- [What is SPDK](#What-is-SPDK)
+- [System Design and implementation](#System-Design-and-implementation)
+- [User Space Drivers](#User-Space-Drivers)
+- [Direct Memory Access From User Space ](#Direct-Memory-Access-From-User-Space)
+---
+
 ## What is SPDK
 
 Storage Performance Development Kit (SPDK) 는 높은 성능과, 확장성(saclable) 을 갖는 user-mode storage 응용을 만들 수 있는 라이브보리를 위한 tool 을 제공한다. SPDK 는 아래의 핵심 기술들을 통해서 높은 성능을 이룩하였다.
@@ -47,7 +55,7 @@ NVMe 디바이스는 하드웨어에 request 를 보낼 때 여러 개의 queue 
 유저 스페이스 드라이버는 반면에 단일 application 에 임베디드 되어 있다. 특정 응용은 자기 스스로 thread 를 만들어 내기 때문에 정확히 몇개의 thread 가 있는지 알고있다. 따라서 SPDK 드라이버는 hardware queue들을 응용에 직접적으로 보여주고 한번에 하나의 프로세스나 쓰레드만 수행할 수 있도록 한다. 
 
 
-## Direct Memory Access (DMA) From User Space 
+## Direct Memory Access From User Space 
 
 본 내용은 왜 SPDK 로 전달되는 데이터버퍼가 `spdk_dma_malloc` 함수로 불려야 하며 SPDK 에서 메모리 관리를 위해서 DPDK에서 입증된 기본 기능에 의존하는지에 대해서 설명한다.
 
@@ -84,3 +92,29 @@ SPDK 는 pinned memory 를 할당하기 위해서 DPDK 에 의존한다. 리눅�
 
 이는 user space process 안팎으로 DMA 작업을 수행하기 위한 미래형 하드웨어 가속 솔루션으로 SPDK 와 DPDK 의 메모리 관리 방법의 장기적인 기초가 된다. 우리는 응용이 vfio 와 IOMMU 를 사용하여 배포하는 것을 추천하다. 
 
+## Flash Translation Layer
+Flash Translation Layer 은 Open Channel 인터페이스를 통하여 non-block SSD 상에서 블록 디바이스 접근을 할 수 있다. FTL 모듈을 사용하기 위해서는 Open Channel SSD 가 필요하다. 가장 쉽게 세팅할 수 있는 것은 QEMU 를 통해서 애뮬레이션을 하는 것이다. Open Channel support 를 제공하는 QEMU 는 [spk-3.0.0](https://github.com/spdk/qemu/tree/spdk-3.0.0) 에 있다. 
+
+
+### Terminology
+#### Logical to physical address map
+L2P mapping 이라고도 불리우며 논리적 주소와 디스크 상의 물리적 주소 간의 매핑을 의미한다. LBA 는 0부터 사용가능한 블록만큼의 범위를 가지며 디바이스 상의 여분의 블록(spare block) 들은 데이터 defragmentation 에 사용되기 위해서 필요한 오프라인으로 전환된 chunck 들을 의미한다.
+
+#### Band
+ Band 는 chunck의 묶음이다. 각각의 band 는 서로 다른 병렬 유닛(parallel unit) 에 속한다. Band 로 내려오는 모든 쓰기는 동일한 패턴을 가진다 - 특정 chunk 에 logical block 에대한 배치 요청이 내려오고 다른 배치가 다음 chunch 로 내려온다. 이러한 패턴을 통해 쓰기 operation 들이 서로 다른 chunck 에서 독립적으로 수행될 수 있기 때문에 쓰기 작업의 병렬성을 보장한다. 각각의 band 는 band 를 구성하는 LBA, 각각의 validity 등을 관리한다. L2P mapping d은 가장 오래된 band 부터 가장 어린 band 에 걸쳐서 SSD 를 읽음으로써 복원될 수 있다. 
+ Address map 과 valid amp 은 밴드의 메타데이터의 일부로서 다른 메타데이터와 함께 위치한다. 메타데이터는 크게 2가지 (head and tail) 파트로 나누어진다.
+ - the head part: band 를 여는 시점에 이미 알고있던 정보를 가지고 있다. (i.e., 디바이스 UUID, band 번호 ...) Head part는 말 그대로 band 의 맨 앞에 존재한다.
+ - the tail part: address map 과 valid map 을 가지고 있으며 band 의 가장 뒤에 존재한다.
+ 
+ 밴드는 순차적으로 쓰이며 band 다 쓰여지기 전에 chunk 가 지워져야한다 (쓸 수 있는 영역을 확보하기 위해서). 이 때 band 는 PREP 상태로 간주된다. 해당 상태가 끝나면 band 는 OPENING 상태로 변하게 된다. OPENING 상태에서는 head metadata 가 쓰여진다. 그 후 band 는 OPEN 상태로 변해서 실제 유저가 해당 밴드에 쓰기를 수행할 수 있다. 만일 모든 사용 가능한 영역이 꽉 차면 tail metadata 가 쓰여지고 이 때가 Closing state 이다. 이 상태가 끝나면 band는 CLOSED 상태가 된다. 
+ 
+ #### Ring write Buffer
+ SSD 의 가장 작은 쓰기 단이가 여러 개의 block size 일 수 있기 때문에 단일 블록 쓰기를 지원하기 위해서 데이터는 버퍼링 되어야 한다. 쓰기 버퍼는 이러한 문제에 대한 해결책이다. 쓰기 버퍼는 미리 할당된 버퍼인 여러개의 batches 로 구성된다. 각각의 batch 는 SSD 에 하나만 전송할 수 있다. 단일 batch 는 블록 사이즈의 버퍼 엔트리로 나누어진다. 
+ 
+ 만일 쓰기가 스케쥴링되어 내려오면 해당 쓰기는 각각의 블록에 대한 엔트리를 확보하고 해당 데이터를 버퍼에 복사해야한다. 모든 블록이 복사되면 해당 쓰기는 종료된 것으로 처리된다. 
+ 
+ #### Deframentation and relocation
+ 
+ 동일한 LBA 에 대한 쓰기가 이전의 물리적 위치를 무효화하기 때문에 밴드 내의 몇몇 블록들은 기본적으로 공간을 낭비하는 오래된 데이터를 가질 수 있다. 이미 쓰인 블록을 덮어쓰기 할 수 있는 방법은 없기 때문에 해당 데이터는 모든 chunck 가 리셋될 때까지 머물러야 한다. 이로 인해서 모든 band가 유효한 데이터를 가지고 있어서 어떤 band 도 지워질 수 있는 상황이 발생하고 이로 인해서 더 이상 write 를 수행할 수 없게 된다. 따라서 유효한 데이터를 이동시키고 모든 band 를 무효화하여 다시 쓸 수 있도록 하는 방법이 필요하다 .
+
+데이터 재배치를 담당하는 모듈은 `reloc` 이라고도 불린다. 만일 밴드가 degfragmentation 을 하도록 선택되거나 ANS(asynchronous NAND mgmt) 이벤트를 받으면 적절한 블록들이 이동되어야 한다고 마킹된다. `reloc` 모듈은 그렇게 마킹된 블록들을 가지는 밴드에서 validity 를 체크한다음에 해당 데이터 들이 여전히 유효한 경우 복사한다. 
