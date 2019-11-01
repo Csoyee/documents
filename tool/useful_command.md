@@ -75,3 +75,10 @@ $> cat "sample_file" | sort | uniq -c
 # Example: 특정 파일(sample_file)의 delimeter " " 기준 n번째 인자를 소팅하고 중복을 제거한다.
 $> cat "sample_file" | awk -F " " '{print ${num}}' | sort | uniq -c
 ```
+
+## sed
+
+```bash
+$ 특정 문자열 치환
+$> sed -i 's/{ORIGINAL}/{cHANGE}/g' {FILE_NAME}
+```
