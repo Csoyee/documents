@@ -63,11 +63,12 @@ Execution Results after 60 seconds
 ### Configuration
 python 의 argparse 패키지를 임포트해서 argument 파싱하는 코드를 메인 함수의 맨 앞에 넣음.
 
-- `--config`       : configuration file path
-- `--reset`        : 드라이버에게 database 의 내부를 reset 하도록 지시함
-- `--warehouses`   : warehouse 개수, default 로는 4개의 warehouse 를 갖는다.
-- `--duration`     : benchmark 수행 시간 (단위: 초), default 로 60초 동안 수행한다.
-- `--client`       : client 개수
-- `--stop-on-error`: exception 발생했을 때 transaction 을 멈춤
-- `--no-load`      : loading 수행하지 않음 (이미 로딩해놓고 run 만하는 경우에 사용)
-- `--no-execute`   : loading 만 수행함
+- `--config`       : configuration file path (no default value)
+- `--reset`        : 드라이버에게 database 의 내부를 reset 하도록 지시함 (default: true)
+- `--warehouses`   : warehouse 개수 (default: 4)
+- `--duration`     : benchmark 수행 시간 (단위: 초) (default: 60)
+- `--clients`      : client 개수 (default: 1)
+- `--stop-on-error`: exception 발생했을 때 transaction 을 멈춤 (default: true)
+- `--no-load`      : loading 수행하지 않음 (이미 로딩해놓고 run 만하는 경우에 사용함, default: true)
+- `--no-execute`   : loading 만 수행함 (default: true)
+- `--scalefactor`  : default 갑은 1 이다.
