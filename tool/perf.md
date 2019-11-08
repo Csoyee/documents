@@ -24,6 +24,23 @@ $ cd [your/kernel/code]/tools/perf
 $ sudo make
 $ sudo make install
 ```
+제대로 설치가 되면 아래 메세지를 입력하면 리눅스 버전이 뜬다. 
+```bash
+$ perf --version 
+perf version 5.3.8
+```
+
+하지만 `sudo` 권한으로 실행하면 제대로 뜨지 않는다. `sudo` 권한으로 perf 를 수행해야 더 많은 기능을 수행할 수 있기 때문에 `sudo` 권한으로 수행하려면 실행파일을 `/usr/local/bin/` 으로 넣어준다.
+
+```bash
+$ whereis perf
+perf: /home/[user name]/bin/perf /usr/share/man/man1/perf.1.gz
+$ sudo cp perf trace /usr/bin/perf/
+$ whereis perf
+perf: /usr/bin/perf /home/[user name]/bin/perf /usr/share/man/man1/perf.1.gz
+```
+
+이렇게 수행하면 `sudo` 권한으로도 perf 를 수행할 수 있다.
 
 ## 수행 
 
@@ -71,4 +88,6 @@ $ perf report
 ```
 
 이외에 mem, top, script, stat 등 다양한 command 가 있으나 나중에 쓰게 되는 경우 추가하겠다.
-자세한 내용은 `$ perf --help` command 를 통해 확인할 수 있따.
+자세한 내용은 `$ perf --help` command 를 통해 확인할 수 있다.
+
+
