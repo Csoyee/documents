@@ -3,6 +3,7 @@
 
 Reference: [link](https://spdk.io/doc/ftl.html)
 
+- 이 때 LBA configuration 관련하여 LBA_INDEXDATA 는 level 3 이상으로 세팅 가능 즉 생성되는 OCSSD 의 sector 사이즈가 4K 가 된다. 
 
 
 ## Identify test
@@ -320,3 +321,19 @@ Write Pointer:                  0
 ## Hello World Test
 
 Write I/O failed.
+
+## FIO Test   
+
+수행은 되지만 NOTICE msg 가 나옴
+```bash
+nand_rule: lvnm_rwc: I/O does not respect device write constrains.Sectos send: (1). Min:4 sectors required
+```
+
+OCSSD 상의 Sector 사이즈가 4K 이고 lsecs_per_pg=4 로 설정하여 bs 를 16K 로 바꾸어 다시 수행
+
+```bash
+nand_rule: previous page state(W) is not (W) for ppa(0x~~)
+lnvm_rwc: set written + meta status faild with psl[0] = ppa: ch(0), lun(0), blk(185), pg(578), pl(1), sec(0)
+```
+
+TODO >> 문제 원인 파악
