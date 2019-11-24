@@ -318,22 +318,54 @@ Write Pointer:                  0
 ```
 
 
+## Create FTL BDEV
+
+FTL bdevs can be created via RPC
+
+
+#### terminal 1
+
+```bash
+$ sudo ./app/spdk_tgt/spdk_tgt
+```
+
+
+#### terminal 2
+```bash
+$./scripts/rpc.py bdev_ftl_create -b nvme0 -l 0-3 -a 00:04.0 
+```
+
+
 ## Hello World Test
 
-Write I/O failed.
+Works Well!! 
 
 ## FIO Test   
 
-수행은 되지만 NOTICE msg 가 나옴
-```bash
-nand_rule: lvnm_rwc: I/O does not respect device write constrains.Sectos send: (1). Min:4 sectors required
-```
 
-OCSSD 상의 Sector 사이즈가 4K 이고 lsecs_per_pg=4 로 설정하여 bs 를 16K 로 바꾸어 다시 수행
+### setup 
+
+add below line to `./examples/bdev/fio_plugin/bdev.conf.in`
 
 ```bash
-nand_rule: previous page state(W) is not (W) for ppa(0x~~)
-lnvm_rwc: set written + meta status faild with psl[0] = ppa: ch(0), lun(0), blk(185), pg(578), pl(1), sec(0)
+[Ftl]
+  TransportID "trtype:PCIe traddr:0000:00:04.0" [bdev name] [punit] [uuid]
 ```
 
-TODO >> 문제 원인 파악
+add below line to `./exmaples/bdev/fio_plugin/example_config.fio`
+
+```bash
+filename=[bdev name]
+```
+
+
+> TODO
+FIO failed 
+
+```bash
+Cannot create lock on device /tmp/spdk_pci_lock_0000:00:04.0, probably process 5856 has claimed it
+nvme_pcie.c: 817:nvme_pcie_ctrlr_construct: *ERROR*: could not claim device 0000:00:04.0 (Permission denied)
+nvme.c: 428:nvme_ctrlr_probe: *ERROR*: Failed to construct NVMe controller for SSD: 0000:00:04.0
+EAL: Driver cannot attach the device (0000:00:04.0)
+EAL: Failed to attach device on primary process
+```
