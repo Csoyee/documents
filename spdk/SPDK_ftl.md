@@ -5,9 +5,30 @@ Reference: [link](https://spdk.io/doc/ftl.html)
 
 - 이 때 LBA configuration 관련하여 LBA_INDEXDATA 는 level 3 이상으로 세팅 가능 즉 생성되는 OCSSD 의 sector 사이즈가 4K 가 된다. 
 
+## Setup
+
+1. ENTER QEMU
+
+2. CHECK DEVICE
+```bash
+$ sudo nvme list
+```
+
+3. SETUP
+```bash
+$ sudo HUGEMEM=4096 scripts/setup.sh config 
+```
+
+
 
 ## Identify test
 
+Run identify script as below
+```bash
+$ sudo ./examples/nvme/identify/identify
+```
+
+Result
 
 ```
 Starting SPDK v20.01-pre git sha1 b0472ac85 / DPDK 19.08.0 initialization...
@@ -318,30 +339,15 @@ Write Pointer:                  0
 ```
 
 
-## Create FTL BDEV
-
-FTL bdevs can be created via RPC
-
-
-#### terminal 1
-
-```bash
-$ sudo ./app/spdk_tgt/spdk_tgt
-```
-
-
-#### terminal 2
-```bash
-$./scripts/rpc.py bdev_ftl_create -b nvme0 -l 0-3 -a 00:04.0 
-```
-
-
 ## Hello World Test
+
+```bash
+$ sudo ./exmples/bdev/hello_world/hello_bdev -c ./examples/bdev/hello_world/bdev.conf
+```
 
 Works Well!! 
 
 ## FIO Test   
-
 
 ### setup 
 
@@ -358,14 +364,12 @@ add below line to `./exmaples/bdev/fio_plugin/example_config.fio`
 filename=[bdev name]
 ```
 
-
-> TODO
-FIO failed 
-
+### Run
 ```bash
-Cannot create lock on device /tmp/spdk_pci_lock_0000:00:04.0, probably process 5856 has claimed it
-nvme_pcie.c: 817:nvme_pcie_ctrlr_construct: *ERROR*: could not claim device 0000:00:04.0 (Permission denied)
-nvme.c: 428:nvme_ctrlr_probe: *ERROR*: Failed to construct NVMe controller for SSD: 0000:00:04.0
-EAL: Driver cannot attach the device (0000:00:04.0)
-EAL: Failed to attach device on primary process
+$ sudo LD_PRELOAD=./examples/bdev/fio_plugin/fio_plugin fio ./exmples/bdev/fio_plugin/example_config.fio
 ```
+
+### Result
+- READ: bw=354MiB/s
+- WRITE: bw=354MiB/s
+- IOPS about 90K
