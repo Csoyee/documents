@@ -40,7 +40,7 @@ thresv   : 0
 위와 같이 정상적으로 동작하는 것을 알 수 있다.
 
 ## TODO
-device 와 target 을 initialize 과정에서 line initilize failed 원인 찾기
+device 와 target 을 initialize 과정에서 line initilize failed 원인 찾기 (ISSUE [#5](https://github.com/Csoyee/documents/issues/5))
 
 ```bash
 $ sudo nvme lnvm inti -d nvme0n1
