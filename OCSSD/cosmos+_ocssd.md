@@ -39,15 +39,18 @@ thresv   : 0
 
 위와 같이 정상적으로 동작하는 것을 알 수 있다.
 
-## TODO
-device 와 target 을 initialize 과정에서 line initilize failed 원인 찾기 (ISSUE [#5](https://github.com/Csoyee/documents/issues/5))
+## Getting Started 
+[reference](https://openchannelssd.readthedocs.io/en/latest/gettingstarted/)
+
+Linux kernel 5.3
+> problem solved: device 와 target 을 initialize 과정에서 line initilize failed  (ISSUE [#5](https://github.com/Csoyee/documents/issues/5))
+> - pblk init 관련 커널 코드 변경
+> - remake bbt table 
 
 ```bash
-$ sudo nvme lnvm inti -d nvme0n1
+$ sudo nvme lnvm init -d nvme0n1
 
-$ sudo nvme lnvm create -d nvme0n1 -b 0 -e 7 -n mydev -t pblk 
-Creation of target failed. Please see dmesg
-
-$ dmesg
-[ 1018.348721] pblk mydev: could not initialize lines
+# -f option 안 붙일 시 read error 발생
+$ sudo nvme lnvm create -d nvme0n1 -b 0 -e 1 -n mydev -t pblk -f 
 ```
+
