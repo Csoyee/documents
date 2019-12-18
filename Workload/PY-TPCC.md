@@ -43,10 +43,10 @@ database             = /tmp/tpcc.db
 (2) Load and Run
 ```bash
 ## LOAD
-$ python ./tpcc.py --no-execute --config=sqlite.config
+$ python ./tpcc.py --no-execute --config=sqlite.config sqlite
 
 ## RUN
-$ python ./tpcc.py --no-load --config=sqlite.config
+$ python ./tpcc.py --no-load --config=sqlite.config sqlite
 Execution Results after 60 seconds
 ------------------------------------------------------------------
                   Executed        Time (µs)       Rate            
