@@ -26,15 +26,25 @@ $ sudo apt-get install maven3
 ```
 
 ## Download
-    $ git clone https://github.com/brianfrankcooper/YCSB
-    
+```bash
+$ git clone https://github.com/brianfrankcooper/YCSB
+```
+
 ## Compile
 - 각각의 데이터베이스 바인딩 디렉토리 아래에 README 파일에 컴파일 방법이 명시되어 있음  
-e.g., Redis compile  
-    $ mvn -pl com.yahoo.ycsb:redis-binding -am clean package
+```bash
+# e.g., Redis compile  
+$ mvn -pl com.yahoo.ycsb:redis-binding -am clean package
+# 일반적으로는 아래의 명령으로 가능
+$ mvn clean package
+```
 
 ## Run
 - loading
-    $ bin/ycsb.sh load (dbname) -P (workload name)
+```bash
+$ bin/ycsb.sh load (dbname) -P (workload name)
+```
 - run 
-    $ bin/ycsb.sh run (dbname) -P (workload name)
+```bash
+$ bin/ycsb.sh run (dbname) -P (workload name)
+```
