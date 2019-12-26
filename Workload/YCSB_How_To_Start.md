@@ -2,10 +2,28 @@
 [Reference](https://github.com/brianfrankcooper/YCSB)
 
 ## Prerequisite
-- YCSB는 Maven3 version을 필요로 함. (Maven2를 사용할 경우 [다음](https://github.com/brianfrankcooper/YCSB/issues/406)과 같은 에러 발생)
-    > [maven3 설치](http://anddev.tistory.com/104)
-- 자바 버전 8 
-    > [자바 8 설치](https://zetawiki.com/wiki/%EC%9A%B0%EB%B6%84%ED%88%AC_Java_8_%EC%84%A4%EC%B9%98)
+### 자바 (>= 8) 
+```bash
+$ sudo apt-get install openjdk-8-jdk  # openjdk-[9/10/11]-jdk 다 가능
+```
+- 만일 openjdk 버전 8이상을 설치할 수 없으면 아래와 같이 한 다음에 install 
+```bash
+$ sudo add-apt-repository ppa:openjdk-r/ppa
+$ sudo apt-get update 
+```
+
+### Maven (>= 3.1)
+- YCSB는 Maven3 version  을 필요로 함. (Maven2를 사용할 경우 [다음](https://github.com/brianfrankcooper/YCSB/issues/406)과 같은 에러 발생)
+```bash
+$ sudo apt-get install maven
+$ mvn --version
+```
+- 만일 설치된 maven 버전이 3.1 미만이면 아래와 같이 설치
+```bash
+$ sudo add-apt-repository ppa:andrei-pozolotin/maven3
+$ sudo apt-get update
+$ sudo apt-get install maven3
+```
 
 ## Download
     $ git clone https://github.com/brianfrankcooper/YCSB
