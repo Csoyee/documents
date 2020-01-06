@@ -1,4 +1,4 @@
-# Running Customized RockSDB 
+# Running Customized RocksDB 
 
 
 현재 YCSB 에서 rocksdb 를 사용할 때는 $YCSB_HOME/pom.xml 에 명시된 rocksdb version 에 따라서 jni package 를 org.rocksdb 에서 받아와서 사용한다.   
@@ -6,6 +6,12 @@
 
 하지만 만일 **내가 컴파일한 rocksdb version** 을 사용하고자 한다면 아래의 과정을 따라하면 된다.
 
+## Prerequisite
+- java 설치 및 java path 설정
+
+```bash
+$> sudo apt-get install curl
+```
 
 ## RocksDB jni package 만들기
 ### Rocksdb 소스코드 받아오기
