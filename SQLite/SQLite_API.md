@@ -33,5 +33,8 @@ SQL 문에서 매개변수를 가질 수 있다. sQL 명령이 컴파일된 후 
 insert into foods (id, name) values (?,?);  // 위치 매개변수
 insert into episodes (id, name) (:id, :name);  // 이름 매개변수
 ```
+
 - 장점: 같은 명령을 다시 컴파일하지 않고 여러 번 실행할 수 있다. 명령을 종료하지 않고 재설정만 한 후 새로운 값을 바인딩하고 다시 실행하면 된다. 
+
+- sqlite python API 를 사용할 때는 기본적으로 해당 기능이 제공된다. `sqlite3.connect` 시에 `cached_statements (default: 100)` 값을 조정할 수 있다. 이를 지원하기 위함인지는 모르겠지만 이에 따라서 python 에서는 `sqlite3.execute()`  를 수행할 때 첫 번째 인자로 `SELECT * FROM stocks WHERE symbol = '%s'` 다음과 같이 대입 가능한 형태를 두 번째 인자로 대입할 변수를 넣는다. `executemany` 를 통해 벌크하게 수행하는 것 또한 가능하다. 
 
