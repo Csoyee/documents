@@ -9,6 +9,14 @@ Reference: [link](https://spdk.io/doc/ftl.html)
 
 1. ENTER QEMU
 
+- Data file 은 device 설정에 맞추어서 생성해야 함. 
+  ```bash
+  # 1 channel, 8 PU, 512 chunks per PU, 24576 (lnum_pln * lpgs_per_blk * lsecs_per_pg) logical blocks. Logical block 크기는 4KB 
+  # 최소 384GB 이어야 함 (8*512*24576*4096B)
+  $ fallocate -l 384G /path/to/data/file
+  ```
+
+
 2. CHECK DEVICE
 ```bash
 $ sudo nvme list
