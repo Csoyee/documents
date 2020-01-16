@@ -1,6 +1,6 @@
 # Add Command to existing built in 
-[reference](https://github.com/Csoyee/nvme-cli#add-command-to-existing-built-in)
-
+- [reference](https://github.com/Csoyee/nvme-cli#add-command-to-existing-built-in)
+- [참조 코드](https://github.com/Csoyee/nvme-cli/commit/7c3624f593eb6616996320aa8b953e19ab9471f7)
 
 ### 1. Define a new command entry in the command list
 #### (1) Define a new command entry in the command list
