@@ -14,7 +14,7 @@
 
 #### RocksDB
 - [RocksDB](https://docs.google.com/presentation/d/1RD-Ap7cuAMkNbGqSbEJ6Snswhd3HPnHPpNLEaOoiDro/edit?usp=drive_web&ouid=102662351957596312947): RocksDB github wiki 페이지  및 구조
-- [RocksDB IO Code 분석] (https://docs.google.com/presentation/d/1WwIzBkSNWA_w1CpOMU4K7Amew6sQlqmux1GdmWokpvs/edit?usp=sharing)
+- [RocksDB IO Code 분석](https://docs.google.com/presentation/d/1WwIzBkSNWA_w1CpOMU4K7Amew6sQlqmux1GdmWokpvs/edit?usp=sharing) : RocksDB IO level code 분석 (Manifest / Flush / Compaction )
 
 #### ForestDB
 - [ForestDB](https://docs.google.com/presentation/d/12tb7HHj4duaLRm1SxIqfsaTkZWcTNfS-UZBqL4NTVZg/edit?usp=sharing): ForestDB 구조에 대한 논문 ([Reference](https://ieeexplore.ieee.org/document/7110563))
