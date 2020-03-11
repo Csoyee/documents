@@ -5,7 +5,13 @@
 
 ## Page Get
 
+
+### sqlite3PagerGet
+
 - pager 에서 특정 데이터 페이지를 읽어오는 함수는 `sqlite3PagerGet` 함수이다. 해당 함수는 바로 pager 의 get 함수를 호출한다. 
+
+| Caller | btreeGetPage(btree.c), getAndInitPage(btree.c), pager_incr_change_counter(pager.c - read page 1), sqlite3PagerCommitPhaseOne(pager.c - read page 1) ...|
+|:------:|:-------------------------:|
 
 ```c
 /* Dispatch all page fetch requests to the appropriate getter method.
@@ -71,4 +77,57 @@ static int getPageNormal(
 
 ## Page Write
 
-- TODO: `pager_write_pagelist` 함수 해석
+### sqlite3PagerWrite
+
+TBD
+
+### pager_write_pagelist 
+- commit 시에 `pager_write_pagelist` 함수를 불러 page cache 에 있는 dirty list 를 disk 로 쓰는 작업을 수행한다. 
+
+```c
+static int pager_write_pagelist(Pager *pPager, PgHdr *pList){
+  int rc = SQLITE_OK;                  /* Return code */
+  
+  while ( rc==SQLITE_OK && pList ){
+    Pgno pgno = pList->pgno; 
+   
+    // NOTE: page 번호가 db size 보다 크거나 don't write flag 가 세팅되어있으면 write 하지 않는다. 
+    if( pgno<=pPager->dbSize && 0==(pList->flags&PGHDR_DONT_WRITE) ){
+      i64 offset = (pgno-1)*(i64)pPager->pageSize;   /* Offset to write */
+      char *pData;                                   /* Data to write */    
+
+      if( pList->pgno==1 ) pager_write_changecounter(pList);
+
+      /* NOTE: pList->pData 값을 pData 로 */
+      CODEC2(pPager, pList->pData, pgno, 6, return SQLITE_NOMEM_BKPT, pData);
+
+      /* NOTE: database page 에 pcache 에 있는 데이터를 써넣음 */
+      rc = sqlite3OsWrite(pPager->fd, pData, pPager->pageSize, offset);
+
+      /* 페이지 업데이트가 되었기 때문에 데이터 파일 버전 정보를 갱신하고 
+      ** 데이터베이스 파일 사이즈가 증가하였으면 파일 사이즈를 갱신한다.
+      */
+      if( pgno==1 ){
+        memcpy(&pPager->dbFileVers, &pData[24], sizeof(pPager->dbFileVers));
+      }
+      if( pgno>pPager->dbFileSize ){
+        pPager->dbFileSize = pgno;
+      }
+      pPager->aStat[PAGER_STAT_WRITE]++;   // stat 갱신
+
+      /* Update any backup objects copying the contents of this pager. */
+      sqlite3BackupUpdate(pPager->pBackup, pgno, (u8*)pList->pData);
+
+      // debug 메세지 출력 (어떤 페이지에 대한 write 를 했는지) 
+    }else{
+      // debug 메세지 출력 (해당 page number 에 대한 write 수행하지 않았음) 
+    }
+    // 새로 읽어온 데이터 기반으로 pagehash 갱신, 다음 dirty list 로 갱신
+    pager_set_pagehash(pList);
+    pList = pList->pDirty;
+  }
+  
+  return rc;
+}
+```
+
