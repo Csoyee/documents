@@ -3,6 +3,15 @@
 - btree.c 및 헤더 파일 분석 
 - 주로 operation call path 에 맞추어 분석 
 
+## Cell 
+
+- Cell 은 가변 길이의 스트링으로 단일 payload (|key |data  |) 를 저장한다. 단일 cell 안에는 cell structure 을 위한 정보 및 key, data 의 byte 길이를 포함하고 있다. 
+- 관련 함수로: insertCell, dropCell, clearCell ... 등이 있다. 인자로 page 와 cell 관련 idx 정보등을 전달하기 때문에 사용자 입장에서는 역할만 이해하고 내부까지 자세히 알 필요는 없다.
+  - insertCell : 새로운 cell 을 페이지 내의 특정 인덱스에 삽입한다. 인자로 페이지 번호와 인덱스 뿐 아니라 새롭게 넣을 셀 내용 및 내부 정보들의 길이 등을 전달한다.
+  - dropCell: page 에서 i 번째 인덱스에 있는 셀을 제거한다. 이미 cell content 가 free 되었으며 별 영향이 없다. 인자로 페이지 번호, 인덱스 셀 크기 등을 전달한다. 
+  - clearCell: 주어진 cell 에서 overflow page 를 free 한다. 
+  - findCell: 페이지와 인덱스 정보를 넘겨주면 cell 위치를 알려주는 함수이다.
+
 ## Create 
 
 - SQLite 는 테이블 당 btree 를 유지하며 이에 따라 table creation 시에 `OP_CreateBtree` 작업을 수행한다. 이 때 `sqlite3BtreeCreateTable()` 함수를 콜한다.
@@ -44,7 +53,7 @@ int sqlite3BtreeInsert(
     if( rc ) return rc;
   }
   
-  if( 만일 pCur 이 insert 하려는 키와 동일한 키가 존재하면 ){
+  if( RowID 가 있는 테이블인 경우 ){
     // 
     invalidateIncrblobCursors(p, pCur->pgnoRoot, pX->nKey, 0);
     
@@ -61,7 +70,7 @@ int sqlite3BtreeInsert(
       // 만일 커서가 overwrite 해야하는 cell 을 가리키고 있지 않거나 adjacent cell 이 아니면
       // 커서를 이동 시켜서 overwrite 해야하거나 인접한 cell 을 가리키도록 커서를 이동시킨다.
       rc = sqlite3BtreeMovetoUnpacked(pCur, 0, pX->nKey, flags!=0, &loc);
-      if( rc ) return rc;
+      if( rc ) return rc; // 에러인 경우에만 리턴
     }
   } else {
     // ROWID 가 없는 테이블이거나 인덱스인 경우.
@@ -76,7 +85,7 @@ int sqlite3BtreeInsert(
       }else{
         rc = btreeMoveto(pCur, pX->pKey, pX->nKey, flags!=0, &loc);
       }
-      if( rc ) return rc;
+      if( rc ) return rc; // 에러인 경우에만 리턴
     }
     
     // 만일 커서가 이미 오버라이트 할 엔트리를 가리키고 있고 새 컨텐츠가 올드 컨텐츠와 같은 경우에는 overwrite 최적화를 사용한다.
@@ -87,10 +96,12 @@ int sqlite3BtreeInsert(
         x2.pData = pX->pKey;
         x2.nData = pX->nKey;
         x2.nZero = 0;
-        return btreeOverwriteCell(pCur, &x2);
+        return btreeOverwriteCell(pCur, &x2); // 만일 커서가 이제 overwrite 할 키를 가리키고 있고 그 사이즈가 같으면 overwrite 한다.
       }
     }
   }
+  
+  // NOTE: 여기까지 왔다면 키의 크기가 달라서 overwrite 할 수 없었던 경우가 된다. pCur 은 모두 인접 혹은 해당 키를 가리키고 있는 상태가 되어있다. 
   
   // 셀의 내용을 채우고
   rc = fillInCell(pPage, newCell, pX, &szNew);
@@ -131,7 +142,7 @@ int sqlite3BtreeInsert(
   }
 }
 
-// TODO - 전체 flow 다시 정리하기, move 관련 내용, cell 관련 내용 정리하기.
+// TODO - move 관련 내용, cell 관련 내용 정리하기.
 
 ```
 
