@@ -141,10 +141,16 @@ int sqlite3BtreeInsert(
     // 또한 커서 상태를 invalid 로 바꾸어서 현재 커서의 위치를 계속해서 저장할 필요가 없도록 한다.
   }
 }
-
-// TODO - move 관련 내용, cell 관련 내용 정리하기.
-
 ```
+
+#### sqliteOverwriteCell
+
+- `btreeOverwriteContent` 함수를 콜한다. 해당 함수는 지정한 cell 위치에 데이터를 새로운 데이터를 채워 넣는다. 해당 함수에서는 데이터를 채우기 전에 [sqlite3PagerWrite](https://github.com/Csoyee/documents/blob/master/SQLite/SQLite_Pager.md#sqlite3pagerwrite) 와 같은 함수를 콜 한다.
+
+#### sqlite3BtreeMovetoUnpacked 
+
+- 위의 [insert](https://github.com/Csoyee/documents/blob/master/SQLite/SQLite_Btree.md#sqlite3btreeinsert) 함수에서 `sqlite3BtreeMovetoUnpacked` 함수를 콜한다. 이 함수는 커서를 pIdKey 혹은 intKey 위치로 이동시킨다. 
+- 이동 과정에서 `getAndInitPage` 함수에서 [sqlite3PagerGet](https://github.com/Csoyee/documents/blob/master/SQLite/SQLite_Pager.md#sqlite3pagerget) 함수를 콜하여 Page 를 읽어오는 작업을 수행하기도 한다.
 
 ## Etc
 
