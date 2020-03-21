@@ -10,6 +10,7 @@ $ git clone https://github.com/brianfrankcooper/YCSB
 $ cd YCSB
 $ mvn clean package
 ```
+- 이 때 `mvn clean package` 명령은 YCSB 에서 제공하는 모든 디비에 대한 워크로드를 컴파일하는 명령이다(따라서 시간이 엄.청 오래걸린다) . 단일 워크로드만 컴파일하기 위해서는 YCSB 의 readme 파일에 명시된 대로 binding 할 데이터베이스를 지정해주면 된다.
     
 ## 데이터 로딩 및 run 
 
