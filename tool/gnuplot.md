@@ -103,6 +103,8 @@ Install 과정이 원활하게 진행되어 /use/bin/gnuplot 에 제대로 gnupl
 ```bash
 > plot "input1.txt" using 1:2 title "data1" with lines axes x1y1, "input2.txt" using 1:2 title "data2" with lines axes x1y2
 ```
+- 2개의 y축이 있는 경우 보조 눈금이 겹치게 나오는 경우가 있다. 이 경우에 `nomirror` 옵션을 통해서 해결할 수 있다.
+
 #### 6-4. frequency graph 그리기  
 - smooth frequency
 
@@ -144,3 +146,7 @@ fileB.txt
 > plot "< paste fileA.txt fileB.txt" using 0:($2+$4) title "SUM" with lines,\
 >  "< paste fileA.txt fileB.txt" using 0:($2+$4)/2 title "AVG" with lines
 ```
+
+#### 6-7. 누적 그래프 그리기
+- smooth cumulative 
+
