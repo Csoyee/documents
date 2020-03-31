@@ -62,9 +62,12 @@ binlog-format=ROW
 ```
 
 **Initialize :**
+
 ```bash
 $ mysql_install_db --defaults-file=/path/to/my.cnf --basedir=/usr/local/mysql/ 
 ```
+
+- 만일 LZ4F 에러가 난다면 버전 문제이기 때문에 버전 문제 해결하기 위해 [본 링크](https://github.com/hermanlee/mysql-5.6/commit/8fd1e1dc40ffca01ec5bd1143e1fc6e57810f847) 따라하고 mysql 다시 
 
 **Start :**
 ```bash
