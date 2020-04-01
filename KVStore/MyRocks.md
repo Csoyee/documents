@@ -1,5 +1,4 @@
-# Install MyRocks
-
+# Install MyRocks 
 
 Reference: [MyRocks Home Page](http://myrocks.io/docs/getting-started/)
 
@@ -78,6 +77,25 @@ $ mysqld_safe --defaults-file=my.cnf --basedir=/usr/lock/mysql
 ```bash
 $ mysqladmin -u root shutdown
 ```
+
+
+## Run TPC-C 
+
+- TPC-C 수행하는 법은 그냥 MySQL/InnoDB 에서 하는 것과 비슷하다. MySQL/InnoDB 에서 TPC-C 수행하는 법은 따로 정리해으니 [참조](https://github.com/Csoyee/documents/blob/master/Workload/tpcc-mysql.md) 하면 된다.
+
+- 하지만 그대로 하면 안된다.  
+  1. Storage Engine 이 다르다.
+  2. MyRocks 는 Foreign key 를 지원하지 않는다.
+  
+- 따라서 아래 명령을 통해 새로운 sql 파일을 만들어서 쓰자.
+
+```bash
+$ cat create_table.sql | sed -e "s/Engine=InnoDB/Engine=RocksDB DEFAULT COLLATE=latin1_bin/g" > create_table_myrocks.sql
+$ grep -v "FOREIGN KEY" add_fkey_idx.sql > add_fkey_idx_myrocks.sql 
+```
+
+
+--- 
 
 ### Error Handling
 
