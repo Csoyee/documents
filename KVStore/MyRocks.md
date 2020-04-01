@@ -54,11 +54,14 @@ rocksdb
 default-storage-engine=rocksdb
 skip-innodb
 default-tmp-storage-engine=MyISAM
+collation-server=latin1_bin
 datadir=/home/csoyee/RocksDB/datadir/   # 본인에 맞게 바꾸기
 
 log-bin
 binlog-format=ROW
 ```
+
+- 추후에 실험을 할 때에는 다음 링크들을 참조해보려고 한다: [메모1](https://github.com/mdcallag/mytools/blob/master/bench/conf/wrk/myrocks.16jun17/my.cnf.base), [메모2](https://github.com/facebook/mysql-5.6/wiki/my.cnf-tuning)
 
 **Initialize :**
 
