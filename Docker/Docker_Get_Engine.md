@@ -115,6 +115,50 @@ Hello World
 ```
 
 
+## Container LifeCycle
+
+- 이미지가 있으면 컨테이너를 생성할 수 있다. 컨테이너는 다음과 같은 라이프 사이클을 갖는다.
+```
+                              docker conatiner run (using image)
+--------------------> 생성 ------ Docker Image -----------> 시작 -----------------> 정지 ------------------> 삭제
+docker container create       docker container start         docker container stop    docker container rm
+(using image)                                                   <-----------------
+                                                              docker continer start
+```
+
+### Docker Container Create
+
+- 이미지로부터 컨테이너를 생성함. 이미지에 포함될 리눅스 디렉토리나 파일의 스냅샷을 취한다. 단 단순히 컨테이너를 생성하기만 할 뿐 시작하는 것은 아니다.
+
+
+### Docker Container Run
+
+- 이미지로부터 컨테이너를 생성 + 시작 하는 명령이다 (create and start). 예시로 리눅스 bash 프로세스를 수행해보겠다.
+
+```bash
+$ sudo docker container run -it --name "test" ubuntu /bin/bash
+root@278a8699a65c:/#
+```
+
+- 그러면 콘솔 프롬프드가 변하는 것을 알 수 있으며 컨테이너 안에서 linux 서버와 같이 명령 조작을 할 수 있게된다. 
+- 컨테이너를 종료시키려면 exit 명령을 통해 쉘을 종료시킨다.
+
+- 종료 전에 docker ps 를 통해서 process 상태를 보면 아래와 같이 ubuntu image 를 확인할 수 있다.
+```bash
+$ sudo docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+278a8699a65c        ubuntu              "/bin/bash"         18 seconds ago      Up 15 seconds                           test
+```
+
+### Docker Container start/stop/rm
+
+- 컨테이너의 시작, 종류, 삭제에 사용된다.
+- 위에서 시작한 container 을 종료하지 않은 상태에서 아래 명령을 통해 멈출 수 있다. 이 때 바로 시작하면 container 이 시작되지만 rm 이후에는 failed to start containers 에러가 뜬다.
+```bash
+$ sudo docker container stop test
+test
+```
+
 ## Get Docker Info
 
 ### Docker version:
@@ -144,9 +188,11 @@ hello-world         latest              fce289e99eb9        15 months ago       
 ```
 
 
-### Docker disk status
+### Docker status
 
-- docker 가 사용하고 있는 디스크의 이용 상황 등이 출력됨
+- docker stats : cpu, memory 사용량 등을 모니터링 할 수 있음.
+
+- df: docker 가 사용하고 있는 디스크의 이용 상황 등이 출력됨
 
 ```bash
 $ sudo docker system df
