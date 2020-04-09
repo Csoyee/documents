@@ -1,9 +1,15 @@
 # Get Docker Engine
 
+## Index
+- [Prerequisites](https://github.com/Csoyee/documents/blob/master/Docker/Docker_Get_Engine.md#prerequisites)
+- [Install](https://github.com/Csoyee/documents/blob/master/Docker/Docker_Get_Engine.md#install)
+- [Verify](https://github.com/Csoyee/documents/blob/master/Docker/Docker_Get_Engine.md#verify)
+- [Container Basic Commands](https://github.com/Csoyee/documents/blob/master/Docker/Docker_Get_Engine.md#verify)
+- [Get Information](https://github.com/Csoyee/documents/blob/master/Docker/Docker_Get_Engine.md#get-docker-info)
 
 ## Prerequisites
 
-### uninstall old versions
+### Uninstall old versions
 
 만일 이전에 설치한 예전 버전의 docker 이 있다면 이를 삭제한다.
 
@@ -143,7 +149,7 @@ root@278a8699a65c:/#
 - 그러면 콘솔 프롬프드가 변하는 것을 알 수 있으며 컨테이너 안에서 linux 서버와 같이 명령 조작을 할 수 있게된다. 
 - 컨테이너를 종료시키려면 exit 명령을 통해 쉘을 종료시킨다.
 
-- 종료 전에 docker ps 를 통해서 process 상태를 보면 아래와 같이 ubuntu image 를 확인할 수 있다.
+- 종료 전에 `docker ps` 를 통해서 process 상태를 보면 아래와 같이 ubuntu image 를 확인할 수 있다.
 ```bash
 $ sudo docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
@@ -154,10 +160,16 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 
 - 컨테이너의 시작, 종류, 삭제에 사용된다.
 - 위에서 시작한 container 을 종료하지 않은 상태에서 아래 명령을 통해 멈출 수 있다. 이 때 바로 시작하면 container 이 시작되지만 rm 이후에는 failed to start containers 에러가 뜬다.
+- 모든 stopped 도커 컨테이너들을 지우고 싶은 경우 `prune` 명령을 사용하면 된다.
 ```bash
 $ sudo docker container stop test
 test
+
+# remove all stopped containers
+$ sudo docker container prune 
 ```
+
+
 
 ## Get Docker Info
 
@@ -187,6 +199,11 @@ ubuntu              latest              4e5021d210f6        2 weeks ago         
 hello-world         latest              fce289e99eb9        15 months ago       1.84kB
 ```
 
+- 만일 특정 image 를 지우고 싶다면 아래의 명령을 사용하면 된다. 
+
+```bash
+$ sudo docker rmi [IMAGE ID]
+```
 
 ### Docker status
 
