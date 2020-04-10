@@ -109,8 +109,18 @@ $ cat cpuset.cpus  # cpuset subsystem
 
 ```
 
-## CPU
+- 실제로 `-m` 옵션을 통해서 메모리를 제한한 후에 cgroup memory limit 을 조회하면 아래와 같이 반영되는 것을 알 수 있다. 
 
+
+```bash
+$ sudo docker container run -d -it -m 12g --name ycsb-test csoyee/ycsb:1.0
+$ cd /sys/fs/cgroup/memory/docker/[container io]
+$ cat memory.limit_in_bytes
+12884901888
+```
+
+
+## CPU
 
 ### Configure the default CFS Scheduler 
 - CFS 는 리눅스 커널의 CPU 스케줄러로 일반적인 리눅스 프로세스들을 스케줄링한다. 해당 세팅을 통해 도커는 컨테이너의 cgroup 세팅을 조절할 수 있다..
@@ -124,4 +134,54 @@ $ cat cpuset.cpus  # cpuset subsystem
 ```
 
 
+- 위 옵션도 한 번 사용해보자 `--cpuset-cpus` 옵션을 통해서 사용 가능한 cpu 를 0-3 으로 제한해보았다. 
+
+```bash
+$ sudo docker stop ycsb-test
+$ sudo docker container run -rm -d -it -m 12g --cpuset-cpus --name ycsb-test csoyee/ycsb:1.0
+$ cd /sys/fs/cgroup/cpuset/docker/[container io]
+$ cat cpuset.cpus
+0-3
+```
+
+이 위에 multi-threaded compaction 을 사용하는 rocksdb application 을 돌려보면 아래와 같이 잘 동작하는 것을 알 수 있다.
+
+
+#### No Limit
+![image](https://user-images.githubusercontent.com/18457707/78976347-f10d4400-7b50-11ea-8052-2332e990ceac.png)
+
+```bash
+$ cat cpuacct.usage_all
+cpu user system
+0 31403302464 0
+1 28067164270 0
+2 27798598306 0
+3 29354260197 0
+4 29348922832 0
+5 30193864066 0
+6 43280119331 0
+7 30666125168 0
+```
+
+
+#### Limit 0-3:
+![image](https://user-images.githubusercontent.com/18457707/78976180-9e338c80-7b50-11ea-9cf3-5298e1232230.png)
+
+```bash
+$ cat cpuacct.usage_all
+cpu user system
+0 62669281445 0
+1 65407853440 0
+2 60252122951 0
+3 61348815668 0
+4 169870022 0
+5 29332734 0
+6 57316721835 0
+7 95388125 0
+```
+
+
+
+
 이외에 realtime scheduler 을 사용할수도 있으나 크게 사용하는 것 같지 않아 넘어간다. 자세한 내용은 [docker manual](https://docs.docker.com/config/containers/resource_constraints/#configure-the-realtime-scheduler) 을 참조하면 된다.
+
