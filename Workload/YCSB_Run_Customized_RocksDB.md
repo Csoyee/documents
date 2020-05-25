@@ -80,8 +80,11 @@ $> bin/ycsb.sh load rocksdb -s -P workloads/workloada -p rocksdb.dir=[rocksdb di
 ```bash
 $> mvn -pl com.yahoo.ycsb:rocksdb-binding -am clean package
 ```
+> ycsb 버전이 변경됨에 따라 명령이 다음과 같이 수정되었다.
+> `$ mvn -pl site.ycsb:rocksdb-binding -am clean package`
 
 그 후 `$YCSB_HOME/rocksdb/target/dependency` 에 있는 `rocksdbjni-5.11.3.jar` 파일을 지우고 내가 컴파일한 버전의 jni 패키지(`rocksdbjni-5.16.0.jar`)를 위치시킨다. 
 
 이 후, 다시 load 하고 확인하면 version 이 바뀌어있다.
+
 
