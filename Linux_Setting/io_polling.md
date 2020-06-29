@@ -22,7 +22,7 @@ $ echo 1 > /sys/module/nvme/parameters/poll_queues
 하지만 이를 세팅하여도 io_poll 똑같은 에러가 발생한다.
 
 ### Solve
-Kernel nvme driver 에서 Nvme device 를 unbind 한 후 다시 bind 를 해주고 `io_poll`을 수정하니 에러가 없어졌다.
+- Kernel nvme driver 에서 Nvme device 를 unbind 한 후 다시 bind 를 해주고 `io_poll`을 수정하니 에러가 없어졌다. 즉, Kernel nvme driver 에서 Nvme device bind 하기 전에 파라미터를 수정해주어야 하므로 grub 에서 수정해주는 방법도 있다. 
 
 ## Test
 사용 SSD: Optane SSD
