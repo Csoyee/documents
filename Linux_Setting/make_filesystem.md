@@ -49,3 +49,9 @@ $> sudo mount -t f2fs [device name] [mount path]
 $> sudo mount -t f2fs -odiscard [device name] [mount path]
 ```
 
+### F2FS status 확인하는 법
+
+```bash
+$> /sys/kernel/debug/f2fs/status
+```
+- 위 파일에서 file system utilization, 파티션 정보, GC 정보등을 확인할 수 있다.
