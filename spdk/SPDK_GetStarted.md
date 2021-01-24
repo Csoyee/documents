@@ -64,18 +64,19 @@ Setup 을 제대로 마쳤으면 `hello_word` 가 제대로 동작한다.
 $ ./example/nvme/hello_world/hello_word
 ```
 
-Hello world 가 제대로 동작하면 쭉 다른 메세지가 뜨다가 마지막에 `Hello world!` 가 프린트 되는 것을 확인할 수 있따.
+Hello world 가 제대로 동작하면 쭉 다른 메세지가 뜨다가 마지막에 `Hello world!` 가 프린트 되는 것을 확인할 수 있.
 
 
 ## FIO 수행
 
-fio 를 사용할 수 있게 configure 했다고 가정하고 예시로 제공되는 fio 플러그인을 활용해 fio 를 수행해보자.
+fio 를 사용할 수 있게 configure 했다고 가정하고 예시로 제공되는 fio 플러그인을 활용해 fio 를 수행해보자. `[path/to/spdk]/exmaples/nvme` 에는 [spdk nvme bdev](https://spdk.io/doc/bdev.html) 를 활용하는 예제 코드들이 존재한다. 
+
 
 ```bash
-LD_PRELOAD=[path/to/spdk]/examples/nvme/fio_plugin/fio_plugin fio examples/nvme/fio_plugin/example_config.fio
+LD_PRELOAD=[path to spdk repo]/build/fio/spdk_nvme fio [path to spdk repo]/examples/nvme/fio_plugin_example_config.fio
 ```
 
-아마 `fio_plugin.c: 406:spdk_fio_setup: *ERROR*: Failed to find namespace 'ns=X'` 이와 같은 에러가 발생할 것이다. 
+위의 명령을 실행하면 아마 `fio_plugin.c: 406:spdk_fio_setup: *ERROR*: Failed to find namespace 'ns=X'` 이와 같은 에러가 발생할 것이다. 
 
 이는 NVMe device 를 선택해서 넘겨줘야 하는데 example_config 에는 설정되어 있지 않기 때문이다. 
 아래 줄을 example_config.fio 에 추가해주자. 물론 traddr 값은 자신의 환경에 맞게 바꾸어주어야 한다. 
